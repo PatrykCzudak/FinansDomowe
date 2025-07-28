@@ -35,8 +35,8 @@ export default function SummaryPage() {
     ? new Date().getDate() 
     : daysInMonth;
   const dailyAverage = totalMonthlyExpenses / currentDay;
-  const savings = totalIncome - totalMonthlyExpenses;
   const totalSavingsAdded = savingsTransactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0);
+  const savings = totalIncome - totalMonthlyExpenses - totalSavingsAdded;
 
   const getCategoryExpenses = (categoryId: string) => {
     return monthlyExpenses
@@ -101,10 +101,9 @@ export default function SummaryPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Oszczędności</p>
                 <p className="text-2xl font-bold">{savings.toFixed(2)} zł</p>
-                {totalSavingsAdded > 0 ? (
-                  <p className="text-sm text-green-600">+{totalSavingsAdded.toFixed(2)} zł dodano do celów</p>
-                ) : (
-                  <p className="text-sm text-green-600">W wybranym miesiącu</p>
+                <p className="text-sm text-green-600">Po wydatkach i celach oszczędnościowych</p>
+                {totalSavingsAdded > 0 && (
+                  <p className="text-xs text-orange-500">-{totalSavingsAdded.toFixed(2)} zł przeznaczono do celów</p>
                 )}
                 {savingsTransactions.length > 0 && (
                   <p className="text-xs text-muted-foreground">{savingsTransactions.length} transakcji oszczędnościowych</p>
