@@ -149,18 +149,13 @@ export default function AdminPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {incomes.map((income) => {
-              const isInCurrentMonth = monthlyIncomes.some(mi => mi.id === income.id);
+            {monthlyIncomes.map((income) => {
               const monthlyAmount = calculateMonthlyIncomeAmount(income);
               
               return (
-              <div key={income.id} className={`flex items-center justify-between p-4 rounded-lg border ${
-                isInCurrentMonth 
-                  ? 'bg-green-50 border-green-200' 
-                  : 'bg-gray-50 border-gray-200 opacity-60'
-              }`}>
+              <div key={income.id} className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
                 <div>
-                  <span className={`font-medium ${isInCurrentMonth ? 'text-gray-900' : 'text-gray-500'}`}>
+                  <span className="font-medium text-gray-900">
                     {income.name}
                   </span>
                   <p className="text-sm text-gray-500">
@@ -170,11 +165,9 @@ export default function AdminPage() {
                       income.frequency === 'yearly' ? 'rok' :
                       income.frequency === 'one-time' ? 'jednorazowo' : income.frequency
                     }
-                    {isInCurrentMonth && (
-                      <span className="ml-2 text-green-600 font-medium">
-                        (Aktywne: {monthlyAmount.toFixed(2)} zł/miesiąc)
-                      </span>
-                    )}
+                    <span className="ml-2 text-green-600 font-medium">
+                      (Aktywne: {monthlyAmount.toFixed(2)} zł/miesiąc)
+                    </span>
                   </p>
                   <p className="text-xs text-gray-400">
                     Data: {new Date(income.date).toLocaleDateString('pl-PL')}
@@ -199,6 +192,11 @@ export default function AdminPage() {
               </div>
               );
             })}
+            {monthlyIncomes.length === 0 && (
+              <div className="py-8 text-center text-gray-500">
+                Brak aktywnych przychodów w tym miesiącu
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
