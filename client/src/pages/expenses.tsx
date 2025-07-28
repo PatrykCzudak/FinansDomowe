@@ -7,7 +7,7 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useBudget } from "@/hooks/use-budget";
 import ExpenseForm from "@/components/forms/expense-form";
-import { MonthSelector } from "@/components/ui/month-selector";
+import { useMonthContext } from "@/contexts/month-context";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { Category, Expense } from "@shared/schema";
@@ -16,17 +16,17 @@ export default function ExpensesPage() {
   const { data: categories = [] } = useQuery<Category[]>({ queryKey: ["/api/categories"] });
   const { data: expenses = [] } = useQuery<Expense[]>({ queryKey: ["/api/expenses"] });
   const { deleteExpense } = useBudget();
+  const { selectedMonth } = useMonthContext();
   
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [filterMonth, setFilterMonth] = useState<string>("");
 
   const getCategoryById = (id: string) => categories.find(cat => cat.id === id);
 
   const filteredExpenses = expenses.filter(expense => {
     const categoryMatch = filterCategory === "all" || expense.categoryId === filterCategory;
-    const monthMatch = !filterMonth || expense.date.startsWith(filterMonth);
+    const monthMatch = expense.date.startsWith(selectedMonth);
     return categoryMatch && monthMatch;
   });
 
@@ -100,12 +100,7 @@ export default function ExpensesPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Input
-              type="month"
-              value={filterMonth}
-              onChange={(e) => setFilterMonth(e.target.value)}
-              className="w-36"
-            />
+
           </div>
         </CardHeader>
         <CardContent>

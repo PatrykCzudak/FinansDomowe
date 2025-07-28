@@ -5,6 +5,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useBudget } from "@/hooks/use-budget";
+import { useMonthContext } from "@/contexts/month-context";
 import { insertExpenseSchema, type Expense, type Category } from "@shared/schema";
 import { z } from "zod";
 
@@ -23,6 +24,13 @@ interface ExpenseFormProps {
 
 export default function ExpenseForm({ expense, categories, onSuccess, onCancel }: ExpenseFormProps) {
   const { createExpense, updateExpense } = useBudget();
+  const { selectedMonth } = useMonthContext();
+  
+  // Ustaw domyślną datę na pierwszy dzień wybranego miesiąca dla nowych wydatków
+  const getDefaultDate = () => {
+    if (expense) return expense.date;
+    return `${selectedMonth}-01`;
+  };
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -30,7 +38,7 @@ export default function ExpenseForm({ expense, categories, onSuccess, onCancel }
       description: expense?.description || "",
       amount: expense?.amount || "",
       categoryId: expense?.categoryId || "",
-      date: expense?.date || new Date().toISOString().split('T')[0],
+      date: getDefaultDate(),
     },
   });
 

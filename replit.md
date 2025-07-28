@@ -111,3 +111,13 @@ Preferred communication style: Simple, everyday language.
 - **Push**: `npm run db:push` applies schema changes
 
 The application follows a monorepo structure with shared TypeScript types between client and server, ensuring type safety across the full stack. The modular architecture allows for easy extension of financial tracking features.
+
+## Recent Changes: Latest modifications with dates
+
+### 2025-01-28: Month Selector & Dark Mode Implementation
+- **Month Context**: Added global month context (`MonthProvider`) that controls expense filtering across the entire application
+- **Header Month Selector**: Replaced static "Lipiec 2025" badge with interactive `MonthSelector` dropdown in header
+- **Month-based Expense Filtering**: Expenses are now filtered by the selected month from the header, while budgets remain persistent
+- **Expense Form Integration**: New expenses default to the selected month, supporting browsing of historical data
+- **Dark/Light Mode Toggle**: Added `ThemeProvider` and `ThemeToggle` component with CSS variables for consistent theming
+- **UI Improvements**: Updated all components to support dark mode with proper contrast and styling
