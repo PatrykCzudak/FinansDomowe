@@ -331,7 +331,7 @@ async def get_portfolio_profit_loss(db: Session = Depends(get_db)):
     total_profit_loss = 0.0
     
     for investment in investments:
-        if investment.current_price:
+        if investment.current_price is not None:
             profit_loss = (investment.current_price - investment.purchase_price) * investment.quantity
             total_profit_loss += profit_loss
     
@@ -358,7 +358,7 @@ async def get_portfolio_historical(days: int, db: Session = Depends(get_db)):
                 hist_data = []
                 for date, row in hist.iterrows():
                     hist_data.append({
-                        'date': date.isoformat(),
+                        'date': str(date)[:19],  # Convert to string and truncate to datetime format
                         'close': float(row['Close']),
                         'weight': investment.quantity * investment.purchase_price
                     })
@@ -436,10 +436,18 @@ async def calculate_var(confidence_level: float = 0.95, time_horizon: int = 1, d
         risk_metrics = calculate_risk_metrics(returns)
         
         investments = db.query(Investment).all()
-        current_value = sum(
-            (inv.current_price or inv.purchase_price) * inv.quantity 
-            for inv in investments
-        ) or 10000
+        current_value = 0
+        for inv in investments:
+            current_price = getattr(inv, 'current_price', None)
+            # Ensure proper handling of None values
+            if current_price is not None:
+                price = current_price
+            else:
+                price = inv.purchase_price
+            current_value += price * inv.quantity
+        
+        if current_value == 0:
+            current_value = 10000
         
         result = {
             'var95': var_es_results.get('var_95', 0) * current_value,
@@ -469,7 +477,8 @@ async def update_investment_prices(db: Session = Depends(get_db)):
             current_price = info.get('regularMarketPrice') or info.get('previousClose')
             
             if current_price:
-                investment.current_price = float(current_price)
+                # Use the setattr method to properly update the SQLAlchemy attribute
+                setattr(investment, 'current_price', float(current_price))
                 updated_count += 1
         except Exception as e:
             print(f"Error updating price for {investment.symbol}: {e}")
