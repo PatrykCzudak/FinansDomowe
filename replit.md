@@ -149,39 +149,23 @@ The application follows a monorepo structure with shared TypeScript types betwee
 - **UI Improvements**: Added AlertTriangle icon, improved tab navigation, color-coded risk metrics
 - **Modular Architecture**: Separated risk analysis into dedicated component for scalability
 
-### 2025-01-28: Complete Python FastAPI Backend & React Frontend Architecture
-- **Major Architecture Restructure**: Complete transformation from Node.js/Express to Python FastAPI backend
-  - `/backend` - Python FastAPI with SQLAlchemy ORM, PostgreSQL integration
-  - `/frontend` - React + TypeScript with Tailwind CSS and shadcn/ui components
-  - Clean separation of concerns with RESTful API design
-  - Removed legacy Node.js server and shared schema implementations
-- **FastAPI Backend Features**: Comprehensive financial management API
-  - SQLAlchemy models for Categories, Incomes, Expenses, Investments, Savings Goals
-  - Yahoo Finance integration with yfinance library for real-time price updates
-  - Advanced risk analysis: VaR, Expected Shortfall, Sharpe Ratio, volatility calculations
-  - NumPy/Pandas for sophisticated financial metrics and portfolio analysis
-  - Background scheduler for automatic price updates every 15 minutes
-  - AI assistant endpoints for portfolio and budget analysis
-- **React Frontend**: Modern, responsive interface with complete functionality
-  - Dashboard with financial overview and key metrics
-  - Expense tracking with category management and date filtering
-  - Investment portfolio with profit/loss calculations and allocation charts
-  - Savings goals with progress tracking and deadline management
-  - Comprehensive summary with budget vs spending analysis
-  - Risk analysis interface with VaR/ES calculations and risk metrics visualization
-- **Docker Production Setup**: Complete containerization with orchestration
-  - `docker-compose.yml` with PostgreSQL, FastAPI backend, and React frontend
-  - Nginx reverse proxy for frontend with API routing to backend
-  - PostgreSQL with automatic database initialization and sample data
-  - Health checks and service dependencies for reliable startup
-  - Production-ready with proper volume management and networking
-- **Deployment Automation**: User-friendly deployment scripts
-  - `start.sh` - One-command startup with health monitoring and status reporting
-  - `stop.sh` - Graceful shutdown with cleanup options
-  - Automatic `.env` file creation with sensible defaults
-  - Comprehensive README.md with setup instructions and troubleshooting
-- **Data Integration**: Real-world financial data connectivity
-  - Yahoo Finance API for live stock prices and market data
-  - PostgreSQL persistence with UUID primary keys and proper relationships
-  - Automatic database schema creation and sample data seeding
-  - RESTful endpoints for all CRUD operations with proper error handling
+### 2025-01-28: Cleaned Node.js/Express Architecture & Removed Duplicates
+- **Project Structure Cleanup**: Removed duplicate backend implementations and unnecessary files
+  - Removed duplicate Python FastAPI backends (`/backend`, `/python-backend`, `/budget-app`)
+  - Removed duplicate frontend implementations (`/frontend`, `/budget-app/frontend`)
+  - Kept single Node.js/Express backend with TypeScript in `/server`
+  - Kept React frontend in `/client` with proper TypeScript configuration
+  - Removed Docker setup files, deployment scripts, and documentation duplicates
+- **Final Architecture**: Clean monorepo structure with single backend/frontend
+  - **Backend**: Node.js/Express with TypeScript, tsx for development
+  - **Frontend**: React + TypeScript with Vite, Tailwind CSS, shadcn/ui
+  - **Database**: PostgreSQL with Drizzle ORM and type-safe operations
+  - **Shared Types**: Common schema definitions in `/shared` directory
+  - **Development**: Single `npm run dev` command starts Express + Vite
+- **Working Features**: All financial management functionality operational
+  - Yahoo Finance integration for real-time stock prices
+  - Categories, incomes, expenses, investments, savings goals management
+  - Risk analysis with VaR, Expected Shortfall calculations
+  - AI assistant with portfolio and budget analysis
+  - Modern responsive UI with dark/light mode
+  - Month-based filtering and search functionality
