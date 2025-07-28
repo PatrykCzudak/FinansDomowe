@@ -31,8 +31,12 @@ export default function TrendsChart({ expenses }: TrendsChartProps) {
 
   if (data.every(item => item.expenses === 0)) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
-        Brak danych historycznych do wyświetlenia
+      <div className="flex items-center justify-center h-full text-muted-foreground">
+        <div className="text-center">
+          <p className="text-lg font-medium mb-2">Brak danych historycznych</p>
+          <p className="text-sm">Dodaj wydatki w poprzednich miesiącach aby zobaczyć trendy</p>
+          <p className="text-xs mt-2">Wykres pokazuje ostatnie 6 miesięcy</p>
+        </div>
       </div>
     );
   }
