@@ -1,4 +1,4 @@
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, Area, ComposedChart } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine } from 'recharts';
 
 interface VaRChartProps {
   data: Array<{
@@ -19,7 +19,7 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
   const sortedReturns = [...returns].sort((a, b) => a - b);
   
   // Create histogram bins
-  const binCount = 30;
+  const binCount = 25;
   const minReturn = Math.min(...sortedReturns);
   const maxReturn = Math.max(...sortedReturns);
   const binWidth = (maxReturn - minReturn) / binCount;
@@ -34,139 +34,121 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
       binEnd: binEnd * 100,
       binCenter: (binStart + binWidth / 2) * 100,
       count,
-      frequency: count / returns.length
+      frequency: (count / returns.length) * 100 // Convert to percentage
     };
   });
 
-  // Calculate VaR and ES as percentages
-  const var95Pct = var95 / data[data.length - 1]?.portfolioValue * 100 || 0;
-  const var99Pct = var99 / data[data.length - 1]?.portfolioValue * 100 || 0;
-  const es95Pct = es95 / data[data.length - 1]?.portfolioValue * 100 || 0;
-  const es99Pct = es99 / data[data.length - 1]?.portfolioValue * 100 || 0;
+  // Calculate VaR and ES as percentages for current portfolio value
+  const currentValue = data[data.length - 1]?.portfolioValue || 10000;
+  const var95Pct = -(var95 / currentValue) * 100;
+  const var99Pct = -(var99 / currentValue) * 100;
+  const es95Pct = -(es95 / currentValue) * 100;
+  const es99Pct = -(es99 / currentValue) * 100;
 
   return (
     <div className="space-y-6">
-      {/* Cumulative P&L Chart */}
-      <div className="h-80">
-        <h4 className="text-lg font-semibold mb-4">Skumulowane Zyski/Straty Portfolio</h4>
+      {/* P&L Histogram with VaR and ES */}
+      <div className="h-96">
+        <h4 className="text-lg font-semibold mb-4">Histogram P&L z VaR i Expected Shortfall</h4>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="date" 
-              tick={{ fontSize: 12 }}
-              tickFormatter={(value) => new Date(value).toLocaleDateString('pl-PL', { month: 'short', day: 'numeric' })}
-            />
-            <YAxis 
-              tick={{ fontSize: 12 }}
-              tickFormatter={(value) => `${(value * 100).toFixed(1)}%`}
-            />
-            <Tooltip 
-              labelFormatter={(value) => `Data: ${new Date(value).toLocaleDateString('pl-PL')}`}
-              formatter={([value]: [number]) => [`${(value * 100).toFixed(2)}%`, 'Zwrot']}
-            />
-            <Legend />
-            <Line 
-              type="monotone" 
-              dataKey="cumulativeReturns" 
-              stroke="#3b82f6" 
-              strokeWidth={2}
-              name="Skumulowane zwroty"
-              dot={false}
-            />
-            <ReferenceLine y={0} stroke="#6b7280" strokeDasharray="2 2" />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* P&L Distribution with VaR and ES */}
-      <div className="h-80">
-        <h4 className="text-lg font-semibold mb-4">Rozkład Zwrotów z VaR i Expected Shortfall</h4>
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={histogram}>
+          <BarChart data={histogram} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="binCenter"
               tick={{ fontSize: 12 }}
               tickFormatter={(value) => `${value.toFixed(1)}%`}
+              label={{ value: 'Zwroty (%)', position: 'insideBottom', offset: -10 }}
             />
             <YAxis 
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => `${(value * 100).toFixed(1)}%`}
+              tickFormatter={(value) => `${value.toFixed(1)}%`}
+              label={{ value: 'Częstość (%)', angle: -90, position: 'insideLeft' }}
             />
             <Tooltip 
-              formatter={([value]: [number]) => [`${(value * 100).toFixed(2)}%`, 'Częstość']}
-              labelFormatter={(value) => `Zwrot: ${value.toFixed(1)}%`}
+              formatter={(value: number) => [`${value.toFixed(2)}%`, 'Częstość']}
+              labelFormatter={(value: number) => `Zwrot: ${value.toFixed(1)}%`}
             />
             <Legend />
             
             {/* Histogram bars */}
-            <Area
-              type="stepAfter"
+            <Bar
               dataKey="frequency"
-              stroke="#60a5fa"
-              fill="#dbeafe"
-              fillOpacity={0.6}
+              fill="#60a5fa"
+              fillOpacity={0.7}
               name="Rozkład zwrotów"
             />
             
             {/* VaR 95% line */}
             <ReferenceLine 
-              x={-var95Pct} 
+              x={var95Pct} 
               stroke="#f59e0b" 
               strokeWidth={3}
               strokeDasharray="5 5"
-              label={{ value: "VaR 95%", position: "top" }}
+              label="VaR 95%"
             />
             
             {/* VaR 99% line */}
             <ReferenceLine 
-              x={-var99Pct} 
+              x={var99Pct} 
               stroke="#ef4444" 
               strokeWidth={3}
               strokeDasharray="5 5"
-              label={{ value: "VaR 99%", position: "top" }}
+              label="VaR 99%"
             />
             
             {/* ES 95% line */}
             <ReferenceLine 
-              x={-es95Pct} 
+              x={es95Pct} 
               stroke="#f97316" 
               strokeWidth={2}
               strokeDasharray="8 2"
-              label={{ value: "ES 95%", position: "bottom" }}
+              label="ES 95%"
             />
             
             {/* ES 99% line */}
             <ReferenceLine 
-              x={-es99Pct} 
+              x={es99Pct} 
               stroke="#dc2626" 
               strokeWidth={2}
               strokeDasharray="8 2"
-              label={{ value: "ES 99%", position: "bottom" }}
+              label="ES 99%"
             />
-          </ComposedChart>
+          </BarChart>
         </ResponsiveContainer>
       </div>
 
       {/* Legend for risk metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-1 bg-amber-500" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 50%, 0 50%, 0 100%, 100% 100%)' }}></div>
-          <span className="text-sm font-medium">VaR 95%: -{var95Pct.toFixed(1)}%</span>
+          <div className="w-4 h-0.5 bg-amber-500 relative">
+            <div className="absolute inset-0 bg-amber-500" style={{ clipPath: 'polygon(0 25%, 100% 25%, 100% 75%, 0 75%)' }}></div>
+          </div>
+          <span className="text-sm font-medium">VaR 95%: {Math.abs(var95Pct).toFixed(1)}%</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-1 bg-red-500" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 50%, 0 50%, 0 100%, 100% 100%)' }}></div>
-          <span className="text-sm font-medium">VaR 99%: -{var99Pct.toFixed(1)}%</span>
+          <div className="w-4 h-0.5 bg-red-500 relative">
+            <div className="absolute inset-0 bg-red-500" style={{ clipPath: 'polygon(0 25%, 100% 25%, 100% 75%, 0 75%)' }}></div>
+          </div>
+          <span className="text-sm font-medium">VaR 99%: {Math.abs(var99Pct).toFixed(1)}%</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-1 bg-orange-500" style={{ borderStyle: 'dashed', borderWidth: '1px 0' }}></div>
-          <span className="text-sm font-medium">ES 95%: -{es95Pct.toFixed(1)}%</span>
+          <div className="w-4 h-0.5 border-t-2 border-orange-500 border-dashed"></div>
+          <span className="text-sm font-medium">ES 95%: {Math.abs(es95Pct).toFixed(1)}%</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-1 bg-red-600" style={{ borderStyle: 'dashed', borderWidth: '1px 0' }}></div>
-          <span className="text-sm font-medium">ES 99%: -{es99Pct.toFixed(1)}%</span>
+          <div className="w-4 h-0.5 border-t-2 border-red-600 border-dashed"></div>
+          <span className="text-sm font-medium">ES 99%: {Math.abs(es99Pct).toFixed(1)}%</span>
         </div>
+      </div>
+
+      {/* Risk Interpretation */}
+      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <h5 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Interpretacja:</h5>
+        <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+          <li>• <strong>VaR 95%:</strong> Prawdopodobieństwo straty większej niż {Math.abs(var95Pct).toFixed(1)}% wynosi 5%</li>
+          <li>• <strong>VaR 99%:</strong> Prawdopodobieństwo straty większej niż {Math.abs(var99Pct).toFixed(1)}% wynosi 1%</li>
+          <li>• <strong>ES:</strong> Oczekiwana strata w najgorszych scenariuszach (tail risk)</li>
+        </ul>
       </div>
     </div>
   );
