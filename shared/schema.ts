@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, decimal, date, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, date, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -66,7 +66,29 @@ export type InsertIncome = z.infer<typeof insertIncomeSchema>;
 export type InsertExpense = z.infer<typeof insertExpenseSchema>;
 export type InsertInvestment = z.infer<typeof insertInvestmentSchema>;
 
+export const savingsGoals = pgTable("savings_goals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  targetAmount: decimal("target_amount", { precision: 10, scale: 2 }).notNull(),
+  currentAmount: decimal("current_amount", { precision: 10, scale: 2 }).notNull().default("0"),
+  targetDate: date("target_date"),
+  category: text("category").notNull(),
+  color: text("color").notNull().default("#3B82F6"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSavingsGoalSchema = createInsertSchema(savingsGoals).omit({
+  id: true,
+  createdAt: true,
+  currentAmount: true,
+});
+
+export type InsertSavingsGoal = z.infer<typeof insertSavingsGoalSchema>;
+
 export type Category = typeof categories.$inferSelect;
 export type Income = typeof incomes.$inferSelect;
 export type Expense = typeof expenses.$inferSelect;
 export type Investment = typeof investments.$inferSelect;
+export type SavingsGoal = typeof savingsGoals.$inferSelect;

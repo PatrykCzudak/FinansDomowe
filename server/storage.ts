@@ -3,14 +3,17 @@ import {
   incomes,
   expenses,
   investments,
+  savingsGoals,
   type Category, 
   type Income, 
   type Expense, 
   type Investment,
+  type SavingsGoal,
   type InsertCategory,
   type InsertIncome,
   type InsertExpense,
-  type InsertInvestment
+  type InsertInvestment,
+  type InsertSavingsGoal
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte } from "drizzle-orm";
@@ -45,6 +48,14 @@ export interface IStorage {
   createInvestment(investment: InsertInvestment): Promise<Investment>;
   updateInvestment(id: string, investment: Partial<InsertInvestment>): Promise<Investment | undefined>;
   deleteInvestment(id: string): Promise<boolean>;
+
+  // Savings Goals
+  getSavingsGoals(): Promise<SavingsGoal[]>;
+  getSavingsGoalById(id: string): Promise<SavingsGoal | undefined>;
+  createSavingsGoal(goal: InsertSavingsGoal): Promise<SavingsGoal>;
+  updateSavingsGoal(id: string, goal: Partial<InsertSavingsGoal>): Promise<SavingsGoal | undefined>;
+  deleteSavingsGoal(id: string): Promise<boolean>;
+  addToSavingsGoal(id: string, amount: number): Promise<SavingsGoal | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -173,6 +184,48 @@ export class DatabaseStorage implements IStorage {
   async deleteInvestment(id: string): Promise<boolean> {
     const result = await db.delete(investments).where(eq(investments.id, id));
     return (result.rowCount || 0) > 0;
+  }
+
+  // Savings Goals
+  async getSavingsGoals(): Promise<SavingsGoal[]> {
+    return await db.select().from(savingsGoals).where(eq(savingsGoals.isActive, true));
+  }
+
+  async getSavingsGoalById(id: string): Promise<SavingsGoal | undefined> {
+    const [goal] = await db.select().from(savingsGoals).where(eq(savingsGoals.id, id));
+    return goal || undefined;
+  }
+
+  async createSavingsGoal(goal: InsertSavingsGoal): Promise<SavingsGoal> {
+    const [newGoal] = await db.insert(savingsGoals).values(goal).returning();
+    return newGoal;
+  }
+
+  async updateSavingsGoal(id: string, goal: Partial<InsertSavingsGoal>): Promise<SavingsGoal | undefined> {
+    const [updatedGoal] = await db
+      .update(savingsGoals)
+      .set(goal)
+      .where(eq(savingsGoals.id, id))
+      .returning();
+    return updatedGoal || undefined;
+  }
+
+  async deleteSavingsGoal(id: string): Promise<boolean> {
+    const result = await db.delete(savingsGoals).where(eq(savingsGoals.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async addToSavingsGoal(id: string, amount: number): Promise<SavingsGoal | undefined> {
+    const goal = await this.getSavingsGoalById(id);
+    if (!goal) return undefined;
+    
+    const newCurrentAmount = parseFloat(goal.currentAmount) + amount;
+    const [updatedGoal] = await db
+      .update(savingsGoals)
+      .set({ currentAmount: newCurrentAmount.toString() })
+      .where(eq(savingsGoals.id, id))
+      .returning();
+    return updatedGoal || undefined;
   }
 }
 

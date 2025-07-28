@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useBudget } from "@/hooks/use-budget";
 import ExpenseForm from "@/components/forms/expense-form";
+import SearchExpenses from "@/components/search-expenses";
 import { useMonthContext } from "@/contexts/month-context";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -84,9 +85,15 @@ export default function ExpensesPage() {
 
       {/* Expenses History */}
       <Card className="lg:col-span-2">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Historia wydatków</CardTitle>
-          <div className="flex space-x-2">
+        <CardHeader>
+          <div className="flex flex-row items-center justify-between">
+            <CardTitle>Historia wydatków</CardTitle>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 mt-4">
+            <div className="flex-1">
+              <SearchExpenses />
+            </div>
+            <div className="flex space-x-2">
             <Select value={filterCategory} onValueChange={setFilterCategory}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Wszystkie kategorie" />
@@ -100,7 +107,7 @@ export default function ExpensesPage() {
                 ))}
               </SelectContent>
             </Select>
-
+            </div>
           </div>
         </CardHeader>
         <CardContent>

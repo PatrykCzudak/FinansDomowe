@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCategorySchema, insertIncomeSchema, insertExpenseSchema, insertInvestmentSchema } from "@shared/schema";
+import { insertCategorySchema, insertIncomeSchema, insertExpenseSchema, insertInvestmentSchema, insertSavingsGoalSchema } from "@shared/schema";
 import { priceService } from "./services/price-service";
 import { aiAssistant } from "./services/ai-assistant";
 import { z } from "zod";
@@ -242,6 +242,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete investment" });
+    }
+  });
+
+  // Savings Goals routes
+  app.get("/api/savings-goals", async (req, res) => {
+    try {
+      const goals = await storage.getSavingsGoals();
+      res.json(goals);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch savings goals" });
+    }
+  });
+
+  app.post("/api/savings-goals", async (req, res) => {
+    try {
+      const data = insertSavingsGoalSchema.parse(req.body);
+      const goal = await storage.createSavingsGoal(data);
+      res.status(201).json(goal);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid savings goal data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create savings goal" });
+      }
+    }
+  });
+
+  app.put("/api/savings-goals/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = insertSavingsGoalSchema.partial().parse(req.body);
+      const goal = await storage.updateSavingsGoal(id, data);
+      if (!goal) {
+        res.status(404).json({ message: "Savings goal not found" });
+        return;
+      }
+      res.json(goal);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid savings goal data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to update savings goal" });
+      }
+    }
+  });
+
+  app.delete("/api/savings-goals/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteSavingsGoal(id);
+      if (!deleted) {
+        res.status(404).json({ message: "Savings goal not found" });
+        return;
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete savings goal" });
+    }
+  });
+
+  app.post("/api/savings-goals/:id/add-savings", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { amount } = req.body;
+      const goal = await storage.addToSavingsGoal(id, parseFloat(amount));
+      if (!goal) {
+        res.status(404).json({ message: "Savings goal not found" });
+        return;
+      }
+      res.json(goal);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to add savings" });
     }
   });
 

@@ -1,4 +1,4 @@
-import { Settings, CreditCard, TrendingUp, PieChart } from "lucide-react";
+import { Settings, CreditCard, TrendingUp, PieChart, PiggyBank } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface NavigationProps {
@@ -14,6 +14,7 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
     { id: "expenses", label: "Wydatki", icon: CreditCard, path: "/expenses" },
     { id: "summary", label: "Podsumowanie", icon: TrendingUp, path: "/summary" },
     { id: "investments", label: "Inwestycje", icon: PieChart, path: "/investments" },
+    { id: "savings", label: "Cele Oszczędnościowe", icon: PiggyBank, path: "/savings" },
   ];
 
   const handleTabClick = (tab: typeof tabs[0]) => {
