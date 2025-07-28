@@ -27,6 +27,7 @@ export default function InvestmentsPage() {
   const [sellingInvestment, setSellingInvestment] = useState<Investment | null>(null);
   const [sellQuantity, setSellQuantity] = useState("");
   const [sellPrice, setSellPrice] = useState("");
+  const [performanceView, setPerformanceView] = useState<"history" | "chart">("history");
 
   const { data: investments = [], isLoading } = useQuery<Investment[]>({
     queryKey: ['/api/investments']
@@ -379,67 +380,89 @@ export default function InvestmentsPage() {
             </CardContent>
           </Card>
 
-          {/* Investment Sales History */}
+          {/* Performance Section */}
           <Card>
-            <CardHeader>
-              <CardTitle>Historia sprzedaży - zrealizowane zyski/straty</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Wydajność portfolio</CardTitle>
+              <div className="flex space-x-2">
+                <Button
+                  variant={performanceView === "history" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPerformanceView("history")}
+                >
+                  Historia sprzedaży
+                </Button>
+                <Button
+                  variant={performanceView === "chart" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPerformanceView("chart")}
+                >
+                  Wykres
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              {investmentSales.length === 0 ? (
-                <div className="py-8 text-center text-gray-500">
-                  Brak historii sprzedaży
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 font-medium text-gray-500">Instrument</th>
-                        <th className="text-right py-3 px-4 font-medium text-gray-500">Ilość</th>
-                        <th className="text-right py-3 px-4 font-medium text-gray-500">Cena sprzedaży</th>
-                        <th className="text-right py-3 px-4 font-medium text-gray-500">Wartość sprzedaży</th>
-                        <th className="text-right py-3 px-4 font-medium text-gray-500">Zysk/Strata</th>
-                        <th className="text-right py-3 px-4 font-medium text-gray-500">Data</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {investmentSales.map((sale) => (
-                        <tr key={sale.id} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="py-3 px-4">
-                            <div>
-                              <span className="font-medium text-gray-900">{sale.investmentSymbol}</span>
-                              <p className="text-sm text-gray-500">{sale.investmentName}</p>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-right text-sm text-gray-900">
-                            {parseFloat(sale.quantitySold).toFixed(2)}
-                          </td>
-                          <td className="py-3 px-4 text-right text-sm text-gray-900">
-                            {parseFloat(sale.salePrice).toFixed(2)} zł
-                          </td>
-                          <td className="py-3 px-4 text-right text-sm text-gray-900">
-                            {parseFloat(sale.totalSaleValue).toFixed(2)} zł
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <span className={`text-sm font-medium ${parseFloat(sale.profitLoss) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {parseFloat(sale.profitLoss) >= 0 ? '+' : ''}{parseFloat(sale.profitLoss).toFixed(2)} zł
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-right text-sm text-gray-900">
-                            {new Date(sale.saleDate).toLocaleDateString('pl-PL')}
-                          </td>
+              {performanceView === "history" ? (
+                investmentSales.length === 0 ? (
+                  <div className="py-8 text-center text-gray-500">
+                    Brak historii sprzedaży
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-4 font-medium text-gray-500">Instrument</th>
+                          <th className="text-right py-3 px-4 font-medium text-gray-500">Ilość</th>
+                          <th className="text-right py-3 px-4 font-medium text-gray-500">Cena sprzedaży</th>
+                          <th className="text-right py-3 px-4 font-medium text-gray-500">Wartość sprzedaży</th>
+                          <th className="text-right py-3 px-4 font-medium text-gray-500">Zysk/Strata</th>
+                          <th className="text-right py-3 px-4 font-medium text-gray-500">Data</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-gray-700">Łączne zrealizowane zyski/straty:</span>
-                      <span className={`text-lg font-bold ${realizedProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {realizedProfitLoss >= 0 ? '+' : ''}{realizedProfitLoss.toFixed(2)} zł
-                      </span>
+                      </thead>
+                      <tbody>
+                        {investmentSales.map((sale) => (
+                          <tr key={sale.id} className="border-b border-gray-100 hover:bg-gray-50">
+                            <td className="py-3 px-4">
+                              <div>
+                                <span className="font-medium text-gray-900">{sale.investmentSymbol}</span>
+                                <p className="text-sm text-gray-500">{sale.investmentName}</p>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-right text-sm text-gray-900">
+                              {parseFloat(sale.quantitySold).toFixed(2)}
+                            </td>
+                            <td className="py-3 px-4 text-right text-sm text-gray-900">
+                              {parseFloat(sale.salePrice).toFixed(2)} zł
+                            </td>
+                            <td className="py-3 px-4 text-right text-sm text-gray-900">
+                              {parseFloat(sale.totalSaleValue).toFixed(2)} zł
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <span className={`text-sm font-medium ${parseFloat(sale.profitLoss) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {parseFloat(sale.profitLoss) >= 0 ? '+' : ''}{parseFloat(sale.profitLoss).toFixed(2)} zł
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-right text-sm text-gray-900">
+                              {new Date(sale.saleDate).toLocaleDateString('pl-PL')}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-gray-700">Łączne zrealizowane zyski/straty:</span>
+                        <span className={`text-lg font-bold ${realizedProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {realizedProfitLoss >= 0 ? '+' : ''}{realizedProfitLoss.toFixed(2)} zł
+                        </span>
+                      </div>
                     </div>
                   </div>
+                )
+              ) : (
+                <div className="h-80">
+                  <PerformanceChart investments={investments} />
                 </div>
               )}
             </CardContent>
