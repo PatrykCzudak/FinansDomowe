@@ -173,7 +173,7 @@ export function calculateVolatility(returns: number[]): number {
  * @param portfolioValue Current portfolio value
  * @param returns Historical returns for correlation analysis
  */
-export function performStressTesting(portfolioValue: number, returns: number[]) {
+export function performStressTesting(portfolioValue: number, _returns: number[]) {
   // Historical crisis scenarios
   const stressScenarios = [
     {

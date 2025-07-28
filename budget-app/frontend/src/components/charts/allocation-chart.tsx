@@ -1,29 +1,30 @@
-import { useMemo } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import type { Investment } from "@shared/schema";
+import { useMemo } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { Investment } from '@shared/schema';
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
 interface AllocationChartProps {
   investments: Investment[];
 }
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#06B6D4'];
-
 export default function AllocationChart({ investments }: AllocationChartProps) {
   const data = useMemo(() => {
+    if (!investments || investments.length === 0) return [];
+
     const typeMap = new Map<string, number>();
-    
+
     investments.forEach(investment => {
-      const value = parseFloat(investment.currentPrice || investment.purchasePrice) * parseFloat(investment.quantity);
-      const currentValue = typeMap.get(investment.type) || 0;
-      typeMap.set(investment.type, currentValue + value);
+      const value = (investment.current_price || investment.purchase_price) * investment.quantity;
+      const type = investment.symbol.includes('.') ? 'International' : 'Domestic';
+      
+      typeMap.set(type, (typeMap.get(type) || 0) + value);
     });
 
-    const allocationData = Array.from(typeMap.entries()).map(([type, value]) => ({
-      name: type,
+    return Array.from(typeMap.entries()).map(([name, value]) => ({
+      name,
       value,
     }));
-
-    return allocationData;
   }, [investments]);
 
   if (data.length === 0) {
@@ -47,7 +48,7 @@ export default function AllocationChart({ investments }: AllocationChartProps) {
           fill="#8884d8"
           dataKey="value"
         >
-          {data.map((entry, index) => (
+          {data.map((_, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>

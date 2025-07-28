@@ -1,5 +1,4 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine } from 'recharts';
-import { createPLHistogram } from '@/utils/risk-calculations';
 
 interface VaRChartProps {
   data: Array<{
