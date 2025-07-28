@@ -26,7 +26,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(category);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid category data", errors: error.errors });
+        res.status(400).json({ message: "Invalid category data", errors: error.issues });
       } else {
         res.status(500).json({ message: "Failed to create category" });
       }
@@ -45,7 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(category);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid category data", errors: error.errors });
+        res.status(400).json({ message: "Invalid category data", errors: error.issues });
       } else {
         res.status(500).json({ message: "Failed to update category" });
       }
@@ -83,7 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(income);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid income data", errors: error.errors });
+        res.status(400).json({ message: "Invalid income data", errors: error.issues });
       } else {
         res.status(500).json({ message: "Failed to create income" });
       }
@@ -102,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(income);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid income data", errors: error.errors });
+        res.status(400).json({ message: "Invalid income data", errors: error.issues });
       } else {
         res.status(500).json({ message: "Failed to update income" });
       }
@@ -150,7 +150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(expense);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid expense data", errors: error.errors });
+        res.status(400).json({ message: "Invalid expense data", errors: error.issues });
       } else {
         res.status(500).json({ message: "Failed to create expense" });
       }
@@ -169,7 +169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(expense);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid expense data", errors: error.errors });
+        res.status(400).json({ message: "Invalid expense data", errors: error.issues });
       } else {
         res.status(500).json({ message: "Failed to update expense" });
       }
@@ -207,7 +207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(investment);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid investment data", errors: error.errors });
+        res.status(400).json({ message: "Invalid investment data", errors: error.issues });
       } else {
         res.status(500).json({ message: "Failed to create investment" });
       }
@@ -226,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(investment);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid investment data", errors: error.errors });
+        res.status(400).json({ message: "Invalid investment data", errors: error.issues });
       } else {
         res.status(500).json({ message: "Failed to update investment" });
       }
@@ -304,7 +304,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(goal);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid savings goal data", errors: error.errors });
+        res.status(400).json({ message: "Invalid savings goal data", errors: error.issues });
       } else {
         res.status(500).json({ message: "Failed to create savings goal" });
       }
@@ -323,7 +323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(goal);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid savings goal data", errors: error.errors });
+        res.status(400).json({ message: "Invalid savings goal data", errors: error.issues });
       } else {
         res.status(500).json({ message: "Failed to update savings goal" });
       }

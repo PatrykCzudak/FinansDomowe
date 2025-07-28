@@ -285,7 +285,7 @@ class AIAssistant {
 
   private generatePredictions(): AnalysisResult {
     return {
-      type: 'prediction',
+      type: 'recommendation',
       title: 'Predykcje AI',
       content: `**Przewidywania na następny miesiąc:**\n- Funkcja predykcji zostanie dodana w przyszłej wersji\n- Będzie analizować trendy wydatków i dochodów\n- Pomoże planować przyszłe budżety`,
       confidence: 0.5

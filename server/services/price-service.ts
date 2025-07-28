@@ -33,7 +33,7 @@ class PriceService {
       }
 
       const quote = await yahooFinance.quote(symbol);
-      const price = quote.regularMarketPrice || quote.price || 0;
+      const price = quote.regularMarketPrice || 0;
       
       // Zapisz w cache
       this.priceCache.set(symbol, {
@@ -60,7 +60,7 @@ class PriceService {
       
       if (Array.isArray(quotes)) {
         quotes.forEach((quote, index) => {
-          const price = quote.regularMarketPrice || quote.price || 0;
+          const price = quote.regularMarketPrice || 0;
           const symbol = symbols[index];
           
           prices.set(symbol, price);
@@ -69,8 +69,8 @@ class PriceService {
             lastUpdated: new Date()
           });
         });
-      } else {
-        const price = quotes.regularMarketPrice || quotes.price || 0;
+      } else if (quotes && 'regularMarketPrice' in quotes) {
+        const price = quotes.regularMarketPrice || 0;
         const symbol = symbols[0];
         
         prices.set(symbol, price);
@@ -99,7 +99,7 @@ class PriceService {
       const investments = await storage.getInvestments();
       if (investments.length === 0) return;
 
-      const symbols = [...new Set(investments.map(inv => inv.symbol))];
+      const symbols = Array.from(new Set(investments.map(inv => inv.symbol)));
       console.log(`Aktualizuję ceny dla ${symbols.length} instrumentów...`);
       
       const prices = await this.getMultiplePrices(symbols);
@@ -110,7 +110,7 @@ class PriceService {
         if (newPrice && newPrice > 0) {
           await storage.updateInvestment(investment.id, {
             currentPrice: newPrice.toString()
-          });
+          } as any);
         }
       }
       
