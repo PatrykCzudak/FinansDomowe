@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, Column, String, Float, DateTime, Boolean, text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import OperationalError
 from pydantic import BaseModel
@@ -446,8 +446,8 @@ async def calculate_var(confidence_level: float = 0.95, time_horizon: int = 1, d
                 price = inv.purchase_price
             current_value += price * inv.quantity
         
-        if current_value == 0:
-            current_value = 10000
+        if float(current_value) == 0.0:
+            current_value = 10000.0
         
         result = {
             'var95': var_es_results.get('var_95', 0) * current_value,
