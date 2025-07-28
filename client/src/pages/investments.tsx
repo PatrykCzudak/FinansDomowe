@@ -9,6 +9,7 @@ import { useBudget } from "@/hooks/use-budget";
 import InvestmentForm from "@/components/forms/investment-form";
 import AllocationChart from "@/components/charts/allocation-chart";
 import PerformanceChart from "@/components/charts/performance-chart";
+import ProfitLossChart from "@/components/charts/profit-loss-chart";
 import AIAssistant from "@/components/ai/ai-assistant";
 import PriceUpdater from "@/components/investment/price-updater";
 import { useState } from "react";
@@ -462,7 +463,7 @@ export default function InvestmentsPage() {
                 )
               ) : (
                 <div className="h-80">
-                  <PerformanceChart investments={investments} />
+                  <ProfitLossChart investmentSales={investmentSales} />
                 </div>
               )}
             </CardContent>
