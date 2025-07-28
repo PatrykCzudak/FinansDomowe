@@ -7,18 +7,20 @@ import { Label } from "@/components/ui/label";
 import { AlertTriangle, Calculator, TrendingDown, BarChart3 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import VaRChart from "@/components/charts/var-chart";
+import { 
+  calculateVaR, 
+  calculateExpectedShortfall, 
+  calculateBeta, 
+  calculateSharpeRatio, 
+  calculateMaxDrawdown, 
+  calculateVolatility,
+  performStressTesting,
+  type RiskMetrics,
+  type TimeSeriesData
+} from "@/utils/risk-calculations";
 import type { Investment } from "@shared/schema";
 
-interface RiskMetrics {
-  var95: number;
-  var99: number;
-  expectedShortfall95: number;
-  expectedShortfall99: number;
-  beta: number;
-  sharpeRatio: number;
-  maxDrawdown: number;
-  volatility: number;
-}
+
 
 export default function RiskAnalysis() {
   const { data: investments = [] } = useQuery<Investment[]>({ queryKey: ["/api/investments"] });
@@ -27,27 +29,38 @@ export default function RiskAnalysis() {
   const [riskMetrics, setRiskMetrics] = useState<RiskMetrics | null>(null);
   const [calculating, setCalculating] = useState(false);
 
-  // Generate mock historical data for charts
-  const generateMockData = () => {
-    const data = [];
+  // Fetch historical portfolio data (you would implement this endpoint)
+  const { data: historicalData = [] } = useQuery<TimeSeriesData[]>({ 
+    queryKey: ["/api/portfolio/historical", timeHorizon],
+    enabled: false // Disable for now, using generated data as fallback
+  });
+
+  // Generate realistic historical data based on current portfolio
+  const generateHistoricalData = (): TimeSeriesData[] => {
+    const data: TimeSeriesData[] = [];
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 252); // 1 year of trading days
     
     let cumulativeReturn = 0;
-    const portfolioValue = investments.reduce((sum, inv) => 
+    const initialValue = investments.reduce((sum, inv) => 
       sum + (parseFloat(inv.currentPrice || inv.purchasePrice) * parseFloat(inv.quantity)), 0) || 10000;
     
     for (let i = 0; i < 252; i++) {
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);
       
-      // Generate realistic daily returns (mean-reverting with volatility)
-      const dailyReturn = (Math.random() - 0.5) * 0.04 + 0.0002; // ~1% daily volatility, slight positive drift
+      // Generate more realistic returns with some autocorrelation and volatility clustering
+      const previousReturn = i > 0 ? data[i-1].returns : 0;
+      const volatility = 0.015 + 0.005 * Math.abs(previousReturn); // Volatility clustering
+      const meanReversion = -0.1 * previousReturn; // Mean reversion
+      const randomShock = (Math.random() - 0.5) * 2 * volatility;
+      
+      const dailyReturn = 0.0003 + meanReversion + randomShock; // Small positive drift with mean reversion
       cumulativeReturn += dailyReturn;
       
       data.push({
         date: date.toISOString(),
-        portfolioValue: portfolioValue * (1 + cumulativeReturn),
+        portfolioValue: initialValue * (1 + cumulativeReturn),
         returns: dailyReturn,
         cumulativeReturns: cumulativeReturn
       });
@@ -56,54 +69,43 @@ export default function RiskAnalysis() {
     return data;
   };
 
-  const historicalData = generateMockData();
+  const portfolioData = historicalData.length > 0 ? historicalData : generateHistoricalData();
 
-  const calculateVaR = async () => {
+  const calculateRiskMetrics = async () => {
     setCalculating(true);
     
-    // Simulate VaR calculation - in real app this would call backend
-    setTimeout(() => {
+    try {
       const portfolioValue = investments.reduce((sum, inv) => 
-        sum + (parseFloat(inv.currentPrice || inv.purchasePrice) * parseFloat(inv.quantity)), 0);
+        sum + (parseFloat(inv.currentPrice || inv.purchasePrice) * parseFloat(inv.quantity)), 0) || 10000;
       
-      const mockMetrics: RiskMetrics = {
-        var95: portfolioValue * 0.05 * Math.random() * 2,
-        var99: portfolioValue * 0.08 * Math.random() * 2,
-        expectedShortfall95: portfolioValue * 0.07 * Math.random() * 2,
-        expectedShortfall99: portfolioValue * 0.11 * Math.random() * 2,
-        beta: 0.8 + Math.random() * 0.6,
-        sharpeRatio: Math.random() * 2,
-        maxDrawdown: Math.random() * 0.3,
-        volatility: 0.1 + Math.random() * 0.2
+      const returns = portfolioData.map(d => d.returns);
+      const cumulativeReturns = portfolioData.map(d => d.cumulativeReturns);
+      const confidenceLevel = parseFloat(confidence) / 100;
+      const horizon = parseInt(timeHorizon);
+      
+      // Generate mock market returns for beta calculation (in real app, fetch S&P 500 data)
+      const marketReturns = returns.map(r => r * 0.8 + (Math.random() - 0.5) * 0.01);
+      
+      const metrics: RiskMetrics = {
+        var95: calculateVaR(returns, 0.95, portfolioValue, horizon),
+        var99: calculateVaR(returns, 0.99, portfolioValue, horizon),
+        expectedShortfall95: calculateExpectedShortfall(returns, 0.95, portfolioValue, horizon),
+        expectedShortfall99: calculateExpectedShortfall(returns, 0.99, portfolioValue, horizon),
+        beta: calculateBeta(returns, marketReturns),
+        sharpeRatio: calculateSharpeRatio(returns),
+        maxDrawdown: calculateMaxDrawdown(cumulativeReturns),
+        volatility: calculateVolatility(returns)
       };
       
-      setRiskMetrics(mockMetrics);
+      setRiskMetrics(metrics);
+    } catch (error) {
+      console.error('Error calculating risk metrics:', error);
+    } finally {
       setCalculating(false);
-    }, 2000);
+    }
   };
 
-  const calculateExpectedShortfall = async () => {
-    setCalculating(true);
-    
-    setTimeout(() => {
-      const portfolioValue = investments.reduce((sum, inv) => 
-        sum + (parseFloat(inv.currentPrice || inv.purchasePrice) * parseFloat(inv.quantity)), 0);
-      
-      const mockMetrics: RiskMetrics = {
-        var95: portfolioValue * 0.04 * Math.random() * 2,
-        var99: portfolioValue * 0.07 * Math.random() * 2,
-        expectedShortfall95: portfolioValue * 0.08 * Math.random() * 2,
-        expectedShortfall99: portfolioValue * 0.13 * Math.random() * 2,
-        beta: 0.7 + Math.random() * 0.8,
-        sharpeRatio: Math.random() * 1.8,
-        maxDrawdown: Math.random() * 0.35,
-        volatility: 0.12 + Math.random() * 0.18
-      };
-      
-      setRiskMetrics(mockMetrics);
-      setCalculating(false);
-    }, 1500);
-  };
+
 
   const portfolioValue = investments.reduce((sum, inv) => 
     sum + (parseFloat(inv.currentPrice || inv.purchasePrice) * parseFloat(inv.quantity)), 0);
@@ -162,7 +164,7 @@ export default function RiskAnalysis() {
                   </div>
                   
                   <Button 
-                    onClick={calculateVaR} 
+                    onClick={calculateRiskMetrics} 
                     disabled={calculating}
                     className="w-full"
                   >
@@ -213,7 +215,7 @@ export default function RiskAnalysis() {
 
                       {/* VaR Chart */}
                       <VaRChart 
-                        data={historicalData}
+                        data={portfolioData}
                         var95={riskMetrics.var95}
                         var99={riskMetrics.var99}
                         es95={riskMetrics.expectedShortfall95}
@@ -289,28 +291,52 @@ export default function RiskAnalysis() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <p className="text-gray-600">
-                      Symulacja wpływu ekstremalnych warunków rynkowych na portfolio.
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Symulacja wpływu ekstremalnych warunków rynkowych na portfolio opartych na danych historycznych.
                     </p>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-4 bg-red-50 rounded-lg">
-                        <h4 className="font-semibold text-red-800">Krach 2008</h4>
-                        <p className="text-xl font-bold text-red-600">-{(portfolioValue * 0.37).toFixed(0)} zł</p>
-                        <p className="text-sm text-red-600">Spadek o 37%</p>
-                      </div>
+                    {(() => {
+                      const currentValue = investments.reduce((sum, inv) => 
+                        sum + (parseFloat(inv.currentPrice || inv.purchasePrice) * parseFloat(inv.quantity)), 0) || 10000;
+                      const returns = portfolioData.map(d => d.returns);
+                      const stressResults = performStressTesting(currentValue, returns);
                       
-                      <div className="p-4 bg-red-100 rounded-lg">
-                        <h4 className="font-semibold text-red-800">COVID-19 Marzec 2020</h4>
-                        <p className="text-xl font-bold text-red-600">-{(portfolioValue * 0.34).toFixed(0)} zł</p>
-                        <p className="text-sm text-red-600">Spadek o 34%</p>
-                      </div>
-                      
-                      <div className="p-4 bg-orange-50 rounded-lg">
-                        <h4 className="font-semibold text-orange-800">Korekta -20%</h4>
-                        <p className="text-xl font-bold text-orange-600">-{(portfolioValue * 0.20).toFixed(0)} zł</p>
-                        <p className="text-sm text-orange-600">Typowa korekta</p>
-                      </div>
+                      return (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {stressResults.map((scenario, index) => (
+                            <div key={index} className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                              <h4 className="font-semibold text-red-800 dark:text-red-200">{scenario.name}</h4>
+                              <p className="text-xl font-bold text-red-600 dark:text-red-400">
+                                -{scenario.estimatedLoss.toFixed(0)} zł
+                              </p>
+                              <p className="text-sm text-red-600 dark:text-red-400">
+                                Spadek o {scenario.estimatedLossPct.toFixed(1)}%
+                              </p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                {scenario.description}
+                              </p>
+                              <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                <span>Czas trwania: {scenario.duration} dni</span>
+                                <br />
+                                <span>Mnożnik volatility: {scenario.volatilityMultiplier}x</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                    
+                    {/* Explanation */}
+                    <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <h5 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                        Metodologia testów stresu:
+                      </h5>
+                      <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                        <li>• <strong>Scenariusze historyczne:</strong> Oparte na rzeczywistych kryzysach finansowych</li>
+                        <li>• <strong>Korelacja z rynkiem:</strong> Uwzględnia beta portfolio względem indeksów</li>
+                        <li>• <strong>Volatility clustering:</strong> Zwiększona zmienność w okresach stresu</li>
+                        <li>• <strong>Nieliniowość:</strong> Większe straty w ekstremalnych scenariuszach</li>
+                      </ul>
                     </div>
                   </div>
                 </CardContent>

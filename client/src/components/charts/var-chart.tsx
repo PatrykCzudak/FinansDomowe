@@ -1,4 +1,5 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine } from 'recharts';
+import { createPLHistogram } from '@/utils/risk-calculations';
 
 interface VaRChartProps {
   data: Array<{
@@ -15,28 +16,18 @@ interface VaRChartProps {
 
 export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartProps) {
   // Generate P&L distribution data for histogram
-  const returns = data.map(d => d.returns).filter(r => !isNaN(r));
-  const sortedReturns = [...returns].sort((a, b) => a - b);
+  const returns = data.map(d => d.returns).filter(r => !isNaN(r) && isFinite(r));
   
-  // Create histogram bins
-  const binCount = 25;
-  const minReturn = Math.min(...sortedReturns);
-  const maxReturn = Math.max(...sortedReturns);
-  const binWidth = (maxReturn - minReturn) / binCount;
+  if (returns.length === 0) {
+    return (
+      <div className="h-96 flex items-center justify-center text-gray-500">
+        Brak danych do wyświetlenia histogramu
+      </div>
+    );
+  }
   
-  const histogram = Array.from({ length: binCount }, (_, i) => {
-    const binStart = minReturn + i * binWidth;
-    const binEnd = binStart + binWidth;
-    const count = sortedReturns.filter(r => r >= binStart && r < binEnd).length;
-    
-    return {
-      binStart: binStart * 100, // Convert to percentage
-      binEnd: binEnd * 100,
-      binCenter: (binStart + binWidth / 2) * 100,
-      count,
-      frequency: (count / returns.length) * 100 // Convert to percentage
-    };
-  });
+  // Create histogram using utility function
+  const histogram = createPLHistogram(returns, 25);
 
   // Calculate VaR and ES as percentages for current portfolio value
   const currentValue = data[data.length - 1]?.portfolioValue || 10000;
@@ -56,17 +47,22 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
             <XAxis 
               dataKey="binCenter"
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => `${value.toFixed(1)}%`}
+              tickFormatter={(value) => typeof value === 'number' ? `${value.toFixed(1)}%` : String(value)}
               label={{ value: 'Zwroty (%)', position: 'insideBottom', offset: -10 }}
             />
             <YAxis 
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => `${value.toFixed(1)}%`}
+              tickFormatter={(value) => typeof value === 'number' ? `${value.toFixed(1)}%` : String(value)}
               label={{ value: 'Częstość (%)', angle: -90, position: 'insideLeft' }}
             />
             <Tooltip 
-              formatter={(value: number) => [`${value.toFixed(2)}%`, 'Częstość']}
-              labelFormatter={(value: number) => `Zwrot: ${value.toFixed(1)}%`}
+              formatter={(value) => [
+                typeof value === 'number' ? `${value.toFixed(2)}%` : String(value), 
+                'Częstość'
+              ]}
+              labelFormatter={(value) => 
+                typeof value === 'number' ? `Zwrot: ${value.toFixed(1)}%` : `Zwrot: ${String(value)}`
+              }
             />
             <Legend />
             
