@@ -173,15 +173,7 @@ export default function AdminPage() {
         </CardContent>
       </Card>
 
-      {/* Budget Configuration */}
-      <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle>Konfiguracja budżetu</CardTitle>
-        </CardHeader>
-        <CardContent>
-          
-        </CardContent>
-      </Card>
+      
     </div>
   );
 }
