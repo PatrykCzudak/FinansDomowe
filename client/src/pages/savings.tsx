@@ -19,8 +19,12 @@ import { Plus, Target, TrendingUp, Calendar, Trash2, PiggyBank } from "lucide-re
 import { format, differenceInDays, isAfter } from "date-fns";
 import { pl } from "date-fns/locale";
 
-const savingsGoalFormSchema = insertSavingsGoalSchema.extend({
+const savingsGoalFormSchema = z.object({
+  name: z.string().min(1, "Nazwa celu jest wymagana"),
+  description: z.string().optional(),
   targetAmount: z.string().min(1, "Podaj kwotę celu"),
+  category: z.string().min(1, "Wybierz kategorię"),
+  color: z.string(),
   targetDate: z.string().optional(),
 });
 
@@ -63,15 +67,22 @@ export default function SavingsPage() {
   const createGoalMutation = useMutation({
     mutationFn: (data: SavingsGoalFormData) => {
       const processedData = {
-        ...data,
+        name: data.name,
+        description: data.description || undefined,
         targetAmount: parseFloat(data.targetAmount).toString(),
-        targetDate: data.targetDate || null,
+        targetDate: data.targetDate || undefined,
+        category: data.category,
+        color: data.color,
       };
       return apiRequest("/api/savings-goals", "POST", processedData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/savings-goals"] });
       setShowCreateDialog(false);
+      form.reset();
+    },
+    onError: (error) => {
+      console.error("Error creating savings goal:", error);
     },
   });
 
@@ -99,13 +110,14 @@ export default function SavingsPage() {
       name: "",
       description: "",
       targetAmount: "",
-      category: "",
+      category: goalCategories[0],
       color: goalColors[0],
       targetDate: "",
     },
   });
 
   const onSubmit = (data: SavingsGoalFormData) => {
+    console.log("Submitting savings goal:", data);
     createGoalMutation.mutate(data);
   };
 

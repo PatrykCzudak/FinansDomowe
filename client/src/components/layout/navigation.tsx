@@ -12,9 +12,9 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
   const tabs = [
     { id: "admin", label: "Admin/Budżet", icon: Settings, path: "/admin" },
     { id: "expenses", label: "Wydatki", icon: CreditCard, path: "/expenses" },
+    { id: "savings", label: "Cele Oszczędnościowe", icon: PiggyBank, path: "/savings" },
     { id: "summary", label: "Podsumowanie", icon: TrendingUp, path: "/summary" },
     { id: "investments", label: "Inwestycje", icon: PieChart, path: "/investments" },
-    { id: "savings", label: "Cele Oszczędnościowe", icon: PiggyBank, path: "/savings" },
   ];
 
   const handleTabClick = (tab: typeof tabs[0]) => {

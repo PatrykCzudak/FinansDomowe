@@ -83,6 +83,9 @@ export const insertSavingsGoalSchema = createInsertSchema(savingsGoals).omit({
   id: true,
   createdAt: true,
   currentAmount: true,
+}).extend({
+  targetDate: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
 });
 
 export type InsertSavingsGoal = z.infer<typeof insertSavingsGoalSchema>;
