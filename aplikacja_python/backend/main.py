@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     logger.info("Starting FastAPI application...")
     
     # Create database if it doesn't exist
-    await create_database_if_not_exists()
+    create_database_if_not_exists()
     
     # Initialize database tables
     init_db()
@@ -266,10 +266,10 @@ def add_savings(goal_id: str, request: AddSavingsRequest, db: Session = Depends(
     if not db_goal:
         raise HTTPException(status_code=404, detail="Savings goal not found")
     
-    db_goal.current_amount += request.amount
+    db_goal.current_amount = float(db_goal.current_amount) + float(request.amount)
     
     # Check if goal is completed
-    if db_goal.current_amount >= db_goal.target_amount:
+    if float(db_goal.current_amount) >= float(db_goal.target_amount):
         db_goal.is_completed = True
     
     db.commit()
@@ -325,9 +325,12 @@ def get_risk_analysis(db: Session = Depends(get_db)):
     # Calculate simple returns based on investments
     returns = []
     for inv in investments:
-        if inv.current_price and inv.purchase_price:
-            return_rate = (float(inv.current_price) - float(inv.purchase_price)) / float(inv.purchase_price)
-            returns.append(return_rate)
+        if inv.current_price is not None and inv.purchase_price is not None:
+            current = float(inv.current_price) if inv.current_price else 0
+            purchase = float(inv.purchase_price) if inv.purchase_price else 1
+            if purchase > 0:
+                return_rate = (current - purchase) / purchase
+                returns.append(return_rate)
     
     if not returns:
         return {

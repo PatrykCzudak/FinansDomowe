@@ -8,9 +8,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Use the Replit database URL directly
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is required")
+    # Fallback for development
+    DATABASE_URL = "postgresql://username:password@localhost/database"
+    print("Warning: Using fallback DATABASE_URL. Set DATABASE_URL environment variable.")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -24,7 +27,7 @@ def get_db():
     finally:
         db.close()
 
-async def create_database_if_not_exists():
+def create_database_if_not_exists():
     """Create database if it doesn't exist"""
     try:
         # Parse DATABASE_URL to get connection parameters

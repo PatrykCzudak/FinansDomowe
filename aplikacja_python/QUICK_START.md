@@ -1,93 +1,154 @@
-# 🚀 Quick Start - Personal Budget Management (Python + React)
+# 🚀 Aplikacja Budżetowa Python - Szybki Start
 
-## Szybkie Uruchomienie
+## Przegląd
 
-### 1. Sprawdź Wymagania
-```bash
-# Sprawdź czy Docker jest zainstalowany
-docker --version
-docker-compose --version
-```
+Kompletna aplikacja zarządzania budżetem osobistym z analizą inwestycji, analizą ryzyka VaR i asystentem AI. Wersja Python używa FastAPI backend + React frontend.
 
-### 2. Uruchom Aplikację
+## ⚡ Szybkie uruchomienie
+
+### Opcja 1: Skrypt automatyczny (zalecana)
 ```bash
 cd aplikacja_python
-./start.sh
+python run_local.py
 ```
 
-### 3. Otwórz Aplikację
-- **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:8000
-- **API Docs:** http://localhost:8000/docs
+### Opcja 2: Uruchomienie ręczne
 
-### 4. Zatrzymaj Aplikację
+#### Backend Python FastAPI:
 ```bash
-./stop.sh
+cd aplikacja_python/backend
+pip install fastapi uvicorn sqlalchemy psycopg2-binary python-dotenv yfinance pandas numpy
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-## Rozwiązywanie Problemów
-
-### Problem: Porty zajęte
+#### Frontend React:
 ```bash
-# Sprawdź które porty są używane
-netstat -tulpn | grep -E ':(3000|8000|5432)'
-
-# Zatrzymaj konflikty lub zmień porty w docker-compose.yml
+cd aplikacja_python/frontend
+npm install
+npm run dev -- --port 3000
 ```
 
-### Problem: Docker nie działa
+## 🌐 Dostęp do aplikacji
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000  
+- **API Dokumentacja**: http://localhost:8000/docs
+- **Baza danych**: PostgreSQL (automatycznie skonfigurowana)
+
+## ✨ Funkcjonalności
+
+### 💰 Zarządzanie budżetem
+- Kategorie z kolorami i limitami budżetowymi
+- Przychody (miesięczne, tygodniowe, jednorazowe)
+- Wydatki z przypisaniem do kategorii
+- Cele oszczędnościowe z śledzeniem postępu
+
+### 📈 Portfel inwestycyjny  
+- Śledzenie akcji, ETF, obligacji
+- Automatyczne aktualizacje cen z Yahoo Finance (co 15 min)
+- Wykresy alokacji i wydajności
+- Analiza zysków/strat
+
+### ⚠️ Analiza ryzyka
+- **Value at Risk (VaR)** - 95% i 99% poziom ufności
+- **Expected Shortfall** - analiza ryzyka ogonowego
+- **Metryki ryzyka** - Beta, Sharpe Ratio, Maximum Drawdown
+- **Stress testing** - scenariusze kryzysów historycznych
+
+### 🤖 Asystent AI
+- Analiza portfela i budżetu
+- Rekomendacje inwestycyjne
+- Modele predykcyjne (LSTM, CNN+Transformer, CatBoost)
+- Optymalizacja portfela Markowitza
+
+### 📊 Wizualizacje
+- Wykresy wydatków i przychodów
+- Trendy finansowe
+- Alokacja portfela
+- Analiza wydajności inwestycji
+
+## 🔧 Wymagania techniczne
+
+### Python Backend
+- Python 3.8+
+- FastAPI
+- SQLAlchemy + PostgreSQL
+- yfinance (dane rynkowe)
+- pandas, numpy (analiza danych)
+
+### React Frontend  
+- Node.js 16+
+- React 18 + TypeScript
+- Tailwind CSS
+- TanStack Query
+- Recharts (wykresy)
+
+## 🗄️ Baza danych
+
+Aplikacja automatycznie tworzy tabele PostgreSQL:
+- `categories` - kategorie budżetowe
+- `incomes` - źródła przychodów
+- `expenses` - wydatki
+- `investments` - pozycje inwestycyjne
+- `savings_goals` - cele oszczędnościowe
+
+## 🌍 Integracje zewnętrzne
+
+- **Yahoo Finance API** - ceny akcji i danych rynkowych w czasie rzeczywistym
+- **PostgreSQL** - trwałe przechowywanie danych
+- **Scheduler** - automatyczne aktualizacje cen co 15 minut
+
+## 🛑 Zatrzymanie aplikacji
+
+### Skrypt automatyczny:
 ```bash
-# Ubuntu/Debian
-sudo systemctl start docker
-
-# macOS
-# Uruchom Docker Desktop
-
-# Windows
-# Uruchom Docker Desktop
+Ctrl+C  # w terminalu ze skryptem run_local.py
 ```
 
-### Problem: Aplikacja nie startuje
+### Ręcznie:
 ```bash
-# Sprawdź logi
-docker-compose logs -f
-
-# Restart z czyszczeniem
-./stop.sh
-docker system prune -f
-./start.sh
+# Zatrzymaj procesy
+pkill -f uvicorn
+pkill -f "npm run dev"
 ```
 
-### Problem: Baza danych
+## 📝 Rozwiązywanie problemów
+
+### Backend nie startuje:
 ```bash
-# Reset bazy danych
-./stop.sh
-# Wybierz opcję usunięcia woluminów (y)
-./start.sh
+# Sprawdź zależności
+pip list | grep fastapi
+
+# Sprawdź bazę danych
+echo $DATABASE_URL
 ```
 
-## Przykładowe Dane
-
-Po pierwszym uruchomieniu aplikacja zawiera:
-- 3 kategorie wydatków (Żywność, Transport, Rozrywka)
-- 1 źródło dochodu (Pensja)
-- 1 inwestycję (AAPL)
-- 1 cel oszczędnościowy (Wakacje)
-
-## Komendy Pomocnicze
-
+### Frontend nie ładuje danych:
 ```bash
-# Status kontenerów
-docker-compose ps
+# Sprawdź czy backend działa
+curl http://localhost:8000/api/categories
 
-# Logi w czasie rzeczywistym
-docker-compose logs -f
-
-# Restart pojedynczej usługi
-docker-compose restart backend
-
-# Aktualizacja aplikacji
-git pull
-docker-compose build
-docker-compose up -d
+# Sprawdź konfigurację API w frontend/src/lib/queryClient.ts
 ```
+
+### Błędy bazy danych:
+```bash
+# Sprawdź tabele
+python -c "from backend.database import init_db; init_db()"
+```
+
+## 🎯 Gotowe funkcjonalności
+
+✅ Kompletne API FastAPI z wszystkimi endpointami  
+✅ Integracja z PostgreSQL i automatyczne tworzenie tabel  
+✅ Frontend React z komunikacją z Python backend  
+✅ Automatyczne aktualizacje cen Yahoo Finance  
+✅ Analiza ryzyka VaR z prawdziwymi danymi  
+✅ Asystent AI z analizą portfela  
+✅ Skrypt automatycznego uruchomienia  
+
+## 📚 Więcej informacji
+
+- **Dokumentacja API**: http://localhost:8000/docs (po uruchomieniu backendu)
+- **Architektura**: Sprawdź `README.md` w głównym folderze projektu
+- **Docker**: Zobacz `docker-compose.yml` dla produkcyjnego wdrożenia
