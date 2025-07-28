@@ -279,23 +279,27 @@ export class DatabaseStorage implements IStorage {
       const today = new Date().toISOString().split('T')[0];
       const [sale] = await db.insert(investmentSales).values({
         investmentId: id,
-        quantitySold: quantitySold.toString(),
-        salePrice: salePrice.toString(),
-        totalSaleValue: totalSaleValue.toString(),
-        profitLoss: profitLoss.toString(),
+        investmentSymbol: investment.symbol,
+        investmentName: investment.name,
+        quantitySold: quantitySold.toFixed(2),
+        salePrice: salePrice.toFixed(2),
+        totalSaleValue: totalSaleValue.toFixed(2),
+        profitLoss: profitLoss.toFixed(2),
         saleDate: today,
       }).returning();
 
       // Update investment quantity
       const newQuantity = parseFloat(investment.quantity) - quantitySold;
       if (newQuantity <= 0) {
-        // Delete investment if fully sold
-        await this.deleteInvestment(id);
+        // Delete investment if fully sold (but keep sale record with reference)
+        await db
+          .delete(investments)
+          .where(eq(investments.id, id));
       } else {
         // Update remaining quantity
         await db
           .update(investments)
-          .set({ quantity: newQuantity.toString() })
+          .set({ quantity: newQuantity.toFixed(2) })
           .where(eq(investments.id, id));
       }
 

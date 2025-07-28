@@ -89,8 +89,10 @@ export const savingsTransactions = pgTable("savings_transactions", {
 
 export const investmentSales = pgTable("investment_sales", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  investmentId: varchar("investment_id").references(() => investments.id).notNull(),
-  quantitySold: decimal("quantity_sold", { precision: 10, scale: 4 }).notNull(),
+  investmentId: varchar("investment_id").notNull(), // Remove foreign key constraint
+  investmentSymbol: varchar("investment_symbol").notNull(), // Store symbol for reference
+  investmentName: varchar("investment_name").notNull(), // Store name for reference
+  quantitySold: decimal("quantity_sold", { precision: 10, scale: 2 }).notNull(),
   salePrice: decimal("sale_price", { precision: 10, scale: 2 }).notNull(),
   totalSaleValue: decimal("total_sale_value", { precision: 10, scale: 2 }).notNull(),
   profitLoss: decimal("profit_loss", { precision: 10, scale: 2 }).notNull(),

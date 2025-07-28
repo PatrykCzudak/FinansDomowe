@@ -32,7 +32,7 @@ export default function InvestmentsPage() {
     queryKey: ['/api/investments']
   });
 
-  const { data: profitLossData } = useQuery({
+  const { data: profitLossData } = useQuery<{ totalProfitLoss: number }>({
     queryKey: ['/api/portfolio/profit-loss']
   });
 
@@ -325,7 +325,7 @@ export default function InvestmentsPage() {
                               </Badge>
                             </td>
                             <td className="py-3 px-4 text-right text-sm text-gray-900">
-                              {investment.quantity}
+                              {parseFloat(investment.quantity).toFixed(2)}
                             </td>
                             <td className="py-3 px-4 text-right text-sm text-gray-900">
                               {investment.purchasePrice} zł
@@ -407,7 +407,7 @@ export default function InvestmentsPage() {
             <div className="space-y-4">
               <div>
                 <p className="font-medium">{sellingInvestment.symbol} - {sellingInvestment.name}</p>
-                <p className="text-sm text-gray-600">Posiadane: {sellingInvestment.quantity} jednostek</p>
+                <p className="text-sm text-gray-600">Posiadane: {parseFloat(sellingInvestment.quantity).toFixed(2)} jednostek</p>
               </div>
               
               <div className="space-y-2">
@@ -415,8 +415,8 @@ export default function InvestmentsPage() {
                 <Input
                   id="sell-quantity"
                   type="number"
-                  step="0.0001"
-                  max={sellingInvestment.quantity}
+                  step="0.01"
+                  max={parseFloat(sellingInvestment.quantity)}
                   value={sellQuantity}
                   onChange={(e) => setSellQuantity(e.target.value)}
                   placeholder="Wprowadź ilość"
