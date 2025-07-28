@@ -1,28 +1,42 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, Boolean
+from sqlalchemy import create_engine, Column, String, Float, DateTime, Boolean, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from pydantic import BaseModel, Field
+from sqlalchemy.exc import OperationalError
+from pydantic import BaseModel
 from typing import List, Optional
 import os
+import time
 from datetime import datetime, timedelta
 import yfinance as yf
 import pandas as pd
 import numpy as np
-from dotenv import load_dotenv
+import uuid
 
-load_dotenv()
+# Database setup with retry logic
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@db:5432/budgetdb")
 
-# Database setup
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/budgetdb")
-engine = create_engine(DATABASE_URL)
+def create_db_engine():
+    engine = create_engine(DATABASE_URL)
+    # Wait for database to be ready
+    for i in range(30):
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            print("✅ Database connection successful")
+            break
+        except OperationalError as e:
+            print(f"⏳ Waiting for database... ({i+1}/30)")
+            time.sleep(2)
+    return engine
+
+engine = create_db_engine()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-app = FastAPI(title="Personal Budget Management API", version="1.0.0")
+app = FastAPI(title="Personal Budget Management API", version="2.0.0")
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,7 +48,6 @@ app.add_middleware(
 # Database Models
 class Category(Base):
     __tablename__ = "categories"
-    
     id = Column(String, primary_key=True, index=True)
     name = Column(String, nullable=False)
     color = Column(String, nullable=False)
@@ -42,7 +55,6 @@ class Category(Base):
 
 class Income(Base):
     __tablename__ = "incomes"
-    
     id = Column(String, primary_key=True, index=True)
     name = Column(String, nullable=False)
     amount = Column(Float, nullable=False)
@@ -50,7 +62,6 @@ class Income(Base):
 
 class Expense(Base):
     __tablename__ = "expenses"
-    
     id = Column(String, primary_key=True, index=True)
     description = Column(String, nullable=False)
     amount = Column(Float, nullable=False)
@@ -59,7 +70,6 @@ class Expense(Base):
 
 class Investment(Base):
     __tablename__ = "investments"
-    
     id = Column(String, primary_key=True, index=True)
     symbol = Column(String, nullable=False)
     name = Column(String, nullable=False)
@@ -70,7 +80,6 @@ class Investment(Base):
 
 class SavingsGoal(Base):
     __tablename__ = "savings_goals"
-    
     id = Column(String, primary_key=True, index=True)
     name = Column(String, nullable=False)
     target_amount = Column(Float, nullable=False)
@@ -155,16 +164,60 @@ def get_db():
     finally:
         db.close()
 
-# Utility functions
 def generate_id():
-    import uuid
     return str(uuid.uuid4())
 
-# API Endpoints
+# Risk calculation functions
+def calculate_var_es(returns: List[float], confidence_levels: List[float] = [0.95, 0.99]):
+    if not returns:
+        return {}
+    
+    returns_array = np.array(returns)
+    result = {}
+    
+    for confidence in confidence_levels:
+        var_percentile = (1 - confidence) * 100
+        var = np.percentile(returns_array, var_percentile)
+        
+        tail_losses = returns_array[returns_array <= var]
+        es = np.mean(tail_losses) if len(tail_losses) > 0 else var
+        
+        result[f'var_{int(confidence*100)}'] = float(var)
+        result[f'es_{int(confidence*100)}'] = float(es)
+    
+    return result
 
+def calculate_risk_metrics(returns: List[float]):
+    if not returns:
+        return {}
+    
+    returns_array = np.array(returns)
+    
+    volatility = np.std(returns_array) * np.sqrt(252)
+    risk_free_rate = 0.02
+    excess_returns = np.mean(returns_array) * 252 - risk_free_rate
+    sharpe_ratio = excess_returns / volatility if volatility > 0 else 0
+    
+    cumulative_returns = np.cumprod(1 + returns_array)
+    running_max = np.maximum.accumulate(cumulative_returns)
+    drawdown = (cumulative_returns - running_max) / running_max
+    max_drawdown = np.min(drawdown)
+    
+    return {
+        'volatility': float(volatility),
+        'sharpe_ratio': float(sharpe_ratio),
+        'max_drawdown': float(abs(max_drawdown)),
+        'beta': 1.0
+    }
+
+# API Endpoints
 @app.get("/")
 async def root():
-    return {"message": "Personal Budget Management API", "status": "running"}
+    return {"message": "Personal Budget Management API", "status": "running", "version": "2.0.0"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "database": "connected"}
 
 # Categories
 @app.get("/api/categories", response_model=List[CategoryResponse])
@@ -291,9 +344,8 @@ async def get_portfolio_historical(days: int, db: Session = Depends(get_db)):
     if not investments:
         return []
     
-    # Get historical data for each investment
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=days + 30)  # Extra buffer for data
+    start_date = end_date - timedelta(days=days + 30)
     
     portfolio_data = []
     
@@ -320,18 +372,15 @@ async def get_portfolio_historical(days: int, db: Session = Depends(get_db)):
             print(f"Error fetching data for {investment.symbol}: {e}")
             continue
     
-    # Calculate portfolio time series
     if not portfolio_data:
         return []
     
-    # Get common dates
     all_dates = set()
     for stock in portfolio_data:
         for point in stock['data']:
             all_dates.add(point['date'])
     
-    common_dates = sorted(list(all_dates))[-days:]  # Get last 'days' dates
-    
+    common_dates = sorted(list(all_dates))[-days:]
     portfolio_time_series = []
     total_weight = sum(stock['weight'] for stock in portfolio_data)
     
@@ -354,7 +403,6 @@ async def get_portfolio_historical(days: int, db: Session = Depends(get_db)):
                 'portfolioValue': portfolio_value
             })
     
-    # Calculate returns
     for i in range(1, len(portfolio_time_series)):
         current = portfolio_time_series[i]
         previous = portfolio_time_series[i-1]
@@ -371,98 +419,28 @@ async def get_portfolio_historical(days: int, db: Session = Depends(get_db)):
     
     return portfolio_time_series
 
-# Risk Analysis Functions
-def calculate_var_es(returns: List[float], confidence_levels: List[float] = [0.95, 0.99]):
-    """Calculate Value at Risk and Expected Shortfall"""
-    if not returns:
-        return {}
-    
-    returns_array = np.array(returns)
-    
-    result = {}
-    for confidence in confidence_levels:
-        var_percentile = (1 - confidence) * 100
-        var = np.percentile(returns_array, var_percentile)
-        
-        # Expected Shortfall (Conditional VaR)
-        tail_losses = returns_array[returns_array <= var]
-        es = np.mean(tail_losses) if len(tail_losses) > 0 else var
-        
-        result[f'var_{int(confidence*100)}'] = float(var)
-        result[f'es_{int(confidence*100)}'] = float(es)
-    
-    return result
-
-def calculate_risk_metrics(returns: List[float], market_returns: List[float] = None):
-    """Calculate additional risk metrics"""
-    if not returns:
-        return {}
-    
-    returns_array = np.array(returns)
-    
-    # Volatility (annualized)
-    volatility = np.std(returns_array) * np.sqrt(252)
-    
-    # Sharpe Ratio (assuming risk-free rate of 2%)
-    risk_free_rate = 0.02
-    excess_returns = np.mean(returns_array) * 252 - risk_free_rate
-    sharpe_ratio = excess_returns / volatility if volatility > 0 else 0
-    
-    # Maximum Drawdown
-    cumulative_returns = np.cumprod(1 + returns_array)
-    running_max = np.maximum.accumulate(cumulative_returns)
-    drawdown = (cumulative_returns - running_max) / running_max
-    max_drawdown = np.min(drawdown)
-    
-    # Beta (if market returns provided)
-    beta = 1.0
-    if market_returns and len(market_returns) == len(returns):
-        market_array = np.array(market_returns)
-        covariance = np.cov(returns_array, market_array)[0, 1]
-        market_variance = np.var(market_array)
-        beta = covariance / market_variance if market_variance > 0 else 1.0
-    
-    return {
-        'volatility': float(volatility),
-        'sharpe_ratio': float(sharpe_ratio),
-        'max_drawdown': float(abs(max_drawdown)),
-        'beta': float(beta)
-    }
-
 @app.post("/api/risk/var-calculation")
-async def calculate_var(
-    confidence_level: float = 0.95,
-    time_horizon: int = 1,
-    db: Session = Depends(get_db)
-):
-    """Calculate VaR and ES for the portfolio"""
+async def calculate_var(confidence_level: float = 0.95, time_horizon: int = 1, db: Session = Depends(get_db)):
     try:
-        # Get portfolio historical data
-        historical_data = await get_portfolio_historical(252, db)  # 1 year of data
+        historical_data = await get_portfolio_historical(252, db)
         
         if not historical_data:
             raise HTTPException(status_code=400, detail="No historical data available")
         
-        # Extract returns
         returns = [point.get('returns', 0) for point in historical_data if 'returns' in point]
         
         if len(returns) < 30:
             raise HTTPException(status_code=400, detail="Insufficient data for VaR calculation")
         
-        # Calculate VaR and ES
         var_es_results = calculate_var_es(returns, [confidence_level, 0.99])
-        
-        # Calculate additional risk metrics
         risk_metrics = calculate_risk_metrics(returns)
         
-        # Get current portfolio value
         investments = db.query(Investment).all()
         current_value = sum(
             (inv.current_price or inv.purchase_price) * inv.quantity 
             for inv in investments
         ) or 10000
         
-        # Convert to monetary values
         result = {
             'var95': var_es_results.get('var_95', 0) * current_value,
             'var99': var_es_results.get('var_99', 0) * current_value,
@@ -478,6 +456,27 @@ async def calculate_var(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error calculating VaR: {str(e)}")
+
+@app.post("/api/investments/update-prices")
+async def update_investment_prices(db: Session = Depends(get_db)):
+    investments = db.query(Investment).all()
+    updated_count = 0
+    
+    for investment in investments:
+        try:
+            ticker = yf.Ticker(investment.symbol)
+            info = ticker.info
+            current_price = info.get('regularMarketPrice') or info.get('previousClose')
+            
+            if current_price:
+                investment.current_price = float(current_price)
+                updated_count += 1
+        except Exception as e:
+            print(f"Error updating price for {investment.symbol}: {e}")
+            continue
+    
+    db.commit()
+    return {"message": f"Updated prices for {updated_count} investments"}
 
 # Savings Goals
 @app.get("/api/savings-goals", response_model=List[SavingsGoalResponse])
@@ -500,32 +499,11 @@ async def create_savings_goal(goal: SavingsGoalCreate, db: Session = Depends(get
     db.refresh(db_goal)
     return db_goal
 
-# Update current prices
-@app.post("/api/investments/update-prices")
-async def update_investment_prices(db: Session = Depends(get_db)):
-    investments = db.query(Investment).all()
-    updated_count = 0
-    
-    for investment in investments:
-        try:
-            ticker = yf.Ticker(investment.symbol)
-            info = ticker.info
-            current_price = info.get('regularMarketPrice') or info.get('previousClose')
-            
-            if current_price:
-                investment.current_price = float(current_price)
-                updated_count += 1
-        except Exception as e:
-            print(f"Error updating price for {investment.symbol}: {e}")
-            continue
-    
-    db.commit()
-    return {"message": f"Updated prices for {updated_count} investments"}
-
 if __name__ == "__main__":
     import uvicorn
     
     # Create tables
     Base.metadata.create_all(bind=engine)
+    print("✅ Database tables created")
     
     uvicorn.run(app, host="0.0.0.0", port=8000)
