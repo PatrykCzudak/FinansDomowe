@@ -6,6 +6,7 @@ import CategoryChart from "@/components/charts/category-chart";
 import TrendsChart from "@/components/charts/trends-chart";
 import { Progress } from "@/components/ui/progress";
 import { useMonthContext } from "@/contexts/month-context";
+import { filterIncomesByMonth, calculateMonthlyIncomeAmount } from "@/utils/income-filter";
 import type { Category, Expense, Income, SavingsTransaction } from "@shared/schema";
 
 export default function SummaryPage() {
@@ -23,9 +24,10 @@ export default function SummaryPage() {
 
 
   const monthlyExpenses = expenses.filter(expense => expense.date.startsWith(selectedMonth));
+  const monthlyIncomes = filterIncomesByMonth(incomes, selectedMonth);
   
   const totalMonthlyExpenses = monthlyExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
-  const totalIncome = incomes.reduce((sum, income) => sum + parseFloat(income.amount), 0);
+  const totalIncome = monthlyIncomes.reduce((sum, income) => sum + calculateMonthlyIncomeAmount(income), 0);
   const totalBudget = categories.reduce((sum, category) => sum + parseFloat(category.budget), 0);
   const remainingBudget = totalBudget - totalMonthlyExpenses;
   const daysInMonth = new Date(year, month, 0).getDate();

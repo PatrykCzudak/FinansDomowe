@@ -29,6 +29,7 @@ export default function IncomeForm({ income, onSuccess, onCancel }: IncomeFormPr
       name: income?.name || "",
       amount: income?.amount || "",
       frequency: income?.frequency || "monthly",
+      date: income?.date || new Date().toISOString().slice(0, 10),
     },
   });
 
@@ -95,6 +96,20 @@ export default function IncomeForm({ income, onSuccess, onCancel }: IncomeFormPr
                   <SelectItem value="one-time">Jednorazowo</SelectItem>
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Data otrzymania</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

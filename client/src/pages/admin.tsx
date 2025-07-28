@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, Wallet, TrendingUp, TrendingDown, PiggyBank } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useBudget } from "@/hooks/use-budget";
+import { useMonthContext } from "@/contexts/month-context";
+import { filterIncomesByMonth, calculateMonthlyIncomeAmount } from "@/utils/income-filter";
 import CategoryForm from "@/components/forms/category-form";
 import IncomeForm from "@/components/forms/income-form";
 import { useState } from "react";
@@ -13,13 +15,15 @@ export default function AdminPage() {
   const { data: categories = [] } = useQuery<Category[]>({ queryKey: ["/api/categories"] });
   const { data: incomes = [] } = useQuery<Income[]>({ queryKey: ["/api/incomes"] });
   const { deleteCategory, deleteIncome } = useBudget();
+  const { selectedMonth } = useMonthContext();
   
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editingIncome, setEditingIncome] = useState<Income | null>(null);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showIncomeForm, setShowIncomeForm] = useState(false);
 
-  const totalIncome = incomes.reduce((sum, income) => sum + parseFloat(income.amount), 0);
+  const monthlyIncomes = filterIncomesByMonth(incomes, selectedMonth);
+  const totalIncome = monthlyIncomes.reduce((sum, income) => sum + calculateMonthlyIncomeAmount(income), 0);
   const totalBudget = categories.reduce((sum, category) => sum + parseFloat(category.budget), 0);
   const remainingBudget = totalIncome - totalBudget;
 
@@ -145,11 +149,36 @@ export default function AdminPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {incomes.map((income) => (
-              <div key={income.id} className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+            {incomes.map((income) => {
+              const isInCurrentMonth = monthlyIncomes.some(mi => mi.id === income.id);
+              const monthlyAmount = calculateMonthlyIncomeAmount(income);
+              
+              return (
+              <div key={income.id} className={`flex items-center justify-between p-4 rounded-lg border ${
+                isInCurrentMonth 
+                  ? 'bg-green-50 border-green-200' 
+                  : 'bg-gray-50 border-gray-200 opacity-60'
+              }`}>
                 <div>
-                  <span className="font-medium text-gray-900">{income.name}</span>
-                  <p className="text-sm text-gray-500">{income.amount} zł / {income.frequency === 'monthly' ? 'miesiąc' : income.frequency}</p>
+                  <span className={`font-medium ${isInCurrentMonth ? 'text-gray-900' : 'text-gray-500'}`}>
+                    {income.name}
+                  </span>
+                  <p className="text-sm text-gray-500">
+                    {income.amount} zł / {
+                      income.frequency === 'monthly' ? 'miesiąc' : 
+                      income.frequency === 'weekly' ? 'tydzień' :
+                      income.frequency === 'yearly' ? 'rok' :
+                      income.frequency === 'one-time' ? 'jednorazowo' : income.frequency
+                    }
+                    {isInCurrentMonth && (
+                      <span className="ml-2 text-green-600 font-medium">
+                        (Aktywne: {monthlyAmount.toFixed(2)} zł/miesiąc)
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    Data: {new Date(income.date).toLocaleDateString('pl-PL')}
+                  </p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button 
@@ -168,7 +197,8 @@ export default function AdminPage() {
                   </Button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

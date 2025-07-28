@@ -16,6 +16,7 @@ export const incomes = pgTable("incomes", {
   name: text("name").notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   frequency: text("frequency").notNull().default("monthly"),
+  date: date("date").notNull().default(sql`CURRENT_DATE`), // Date when the income was received or is expected
   createdAt: timestamp("created_at").defaultNow(),
 });
 
