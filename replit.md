@@ -1,8 +1,8 @@
-# Personal Budget Management Application
+# Personal Budget Management Application - Python FastAPI Backend
 
 ## Overview
 
-This is a full-stack personal budget management application built with React, TypeScript, Express.js, and PostgreSQL. The application provides comprehensive financial tracking including categories, income, expenses, and investments with interactive charts and data visualization.
+This is a comprehensive personal budget management backend built exclusively with Python FastAPI and PostgreSQL. The application provides advanced financial tracking, portfolio management, and sophisticated risk analysis using classical statistical methods. All other backends have been removed - only Python FastAPI remains.
 
 ## User Preferences
 
