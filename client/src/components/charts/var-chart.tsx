@@ -26,15 +26,36 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
     );
   }
   
-  // Create histogram using utility function
-  const histogram = createPLHistogram(returns, 25);
-
-  // Calculate VaR and ES as percentages for current portfolio value
+  // Create histogram with fewer bins and monetary values
+  const binCount = 15; // Reduced bins for better readability
   const currentValue = data[data.length - 1]?.portfolioValue || 10000;
-  const var95Pct = -(var95 / currentValue) * 100;
-  const var99Pct = -(var99 / currentValue) * 100;
-  const es95Pct = -(es95 / currentValue) * 100;
-  const es99Pct = -(es99 / currentValue) * 100;
+  
+  // Convert returns to P&L in PLN
+  const plValues = returns.map(r => r * currentValue);
+  const sortedPL = [...plValues].sort((a, b) => a - b);
+  const minPL = sortedPL[0];
+  const maxPL = sortedPL[sortedPL.length - 1];
+  const binWidth = (maxPL - minPL) / binCount;
+  
+  const histogram = Array.from({ length: binCount }, (_, i) => {
+    const binStart = minPL + i * binWidth;
+    const binEnd = binStart + binWidth;
+    const count = sortedPL.filter(pl => pl >= binStart && pl < binEnd).length;
+    
+    return {
+      binStart,
+      binEnd,
+      binCenter: binStart + binWidth / 2,
+      count,
+      frequency: count // Use absolute count for easier interpretation
+    };
+  }).filter(bin => bin.count > 0); // Remove empty bins
+
+  // VaR and ES values are already in PLN (absolute loss amounts)
+  const var95PLN = -Math.abs(var95);
+  const var99PLN = -Math.abs(var99);
+  const es95PLN = -Math.abs(es95);
+  const es99PLN = -Math.abs(es99);
 
   return (
     <div className="space-y-6">
@@ -42,26 +63,29 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
       <div className="h-96">
         <h4 className="text-lg font-semibold mb-4">Histogram P&L z VaR i Expected Shortfall</h4>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={histogram} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <BarChart data={histogram} margin={{ top: 20, right: 30, left: 50, bottom: 50 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="binCenter"
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => typeof value === 'number' ? `${value.toFixed(1)}%` : String(value)}
-              label={{ value: 'Zwroty (%)', position: 'insideBottom', offset: -10 }}
+              tickFormatter={(value) => typeof value === 'number' ? `${value.toFixed(0)} zł` : String(value)}
+              label={{ value: 'Zysk/Strata (zł)', position: 'insideBottom', offset: -10 }}
+              angle={-45}
+              textAnchor="end"
+              height={60}
             />
             <YAxis 
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => typeof value === 'number' ? `${value.toFixed(1)}%` : String(value)}
-              label={{ value: 'Częstość (%)', angle: -90, position: 'insideLeft' }}
+              tickFormatter={(value) => String(value)}
+              label={{ value: 'Liczba dni', angle: -90, position: 'insideLeft' }}
             />
             <Tooltip 
               formatter={(value) => [
-                typeof value === 'number' ? `${value.toFixed(2)}%` : String(value), 
+                `${value} dni`, 
                 'Częstość'
               ]}
               labelFormatter={(value) => 
-                typeof value === 'number' ? `Zwrot: ${value.toFixed(1)}%` : `Zwrot: ${String(value)}`
+                typeof value === 'number' ? `P&L: ${value.toFixed(0)} zł` : `P&L: ${String(value)}`
               }
             />
             <Legend />
@@ -71,12 +95,12 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
               dataKey="frequency"
               fill="#60a5fa"
               fillOpacity={0.7}
-              name="Rozkład zwrotów"
+              name="Rozkład P&L"
             />
             
             {/* VaR 95% line */}
             <ReferenceLine 
-              x={var95Pct} 
+              x={var95PLN} 
               stroke="#f59e0b" 
               strokeWidth={3}
               strokeDasharray="5 5"
@@ -85,7 +109,7 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
             
             {/* VaR 99% line */}
             <ReferenceLine 
-              x={var99Pct} 
+              x={var99PLN} 
               stroke="#ef4444" 
               strokeWidth={3}
               strokeDasharray="5 5"
@@ -94,7 +118,7 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
             
             {/* ES 95% line */}
             <ReferenceLine 
-              x={es95Pct} 
+              x={es95PLN} 
               stroke="#f97316" 
               strokeWidth={2}
               strokeDasharray="8 2"
@@ -103,7 +127,7 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
             
             {/* ES 99% line */}
             <ReferenceLine 
-              x={es99Pct} 
+              x={es99PLN} 
               stroke="#dc2626" 
               strokeWidth={2}
               strokeDasharray="8 2"
@@ -119,21 +143,21 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
           <div className="w-4 h-0.5 bg-amber-500 relative">
             <div className="absolute inset-0 bg-amber-500" style={{ clipPath: 'polygon(0 25%, 100% 25%, 100% 75%, 0 75%)' }}></div>
           </div>
-          <span className="text-sm font-medium">VaR 95%: {Math.abs(var95Pct).toFixed(1)}%</span>
+          <span className="text-sm font-medium">VaR 95%: {Math.abs(var95PLN).toFixed(0)} zł</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-0.5 bg-red-500 relative">
             <div className="absolute inset-0 bg-red-500" style={{ clipPath: 'polygon(0 25%, 100% 25%, 100% 75%, 0 75%)' }}></div>
           </div>
-          <span className="text-sm font-medium">VaR 99%: {Math.abs(var99Pct).toFixed(1)}%</span>
+          <span className="text-sm font-medium">VaR 99%: {Math.abs(var99PLN).toFixed(0)} zł</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-0.5 border-t-2 border-orange-500 border-dashed"></div>
-          <span className="text-sm font-medium">ES 95%: {Math.abs(es95Pct).toFixed(1)}%</span>
+          <span className="text-sm font-medium">ES 95%: {Math.abs(es95PLN).toFixed(0)} zł</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-0.5 border-t-2 border-red-600 border-dashed"></div>
-          <span className="text-sm font-medium">ES 99%: {Math.abs(es99Pct).toFixed(1)}%</span>
+          <span className="text-sm font-medium">ES 99%: {Math.abs(es99PLN).toFixed(0)} zł</span>
         </div>
       </div>
 
@@ -141,9 +165,10 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
       <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
         <h5 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Interpretacja:</h5>
         <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-          <li>• <strong>VaR 95%:</strong> Prawdopodobieństwo straty większej niż {Math.abs(var95Pct).toFixed(1)}% wynosi 5%</li>
-          <li>• <strong>VaR 99%:</strong> Prawdopodobieństwo straty większej niż {Math.abs(var99Pct).toFixed(1)}% wynosi 1%</li>
+          <li>• <strong>VaR 95%:</strong> Prawdopodobieństwo straty większej niż {Math.abs(var95PLN).toFixed(0)} zł wynosi 5%</li>
+          <li>• <strong>VaR 99%:</strong> Prawdopodobieństwo straty większej niż {Math.abs(var99PLN).toFixed(0)} zł wynosi 1%</li>
           <li>• <strong>ES:</strong> Oczekiwana strata w najgorszych scenariuszach (tail risk)</li>
+          <li>• <strong>Histogram:</strong> Pokazuje rozkład dziennych zysków/strat portfolio na podstawie rzeczywistych danych historycznych</li>
         </ul>
       </div>
     </div>

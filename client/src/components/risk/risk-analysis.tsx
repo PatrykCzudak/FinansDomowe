@@ -29,10 +29,10 @@ export default function RiskAnalysis() {
   const [riskMetrics, setRiskMetrics] = useState<RiskMetrics | null>(null);
   const [calculating, setCalculating] = useState(false);
 
-  // Fetch historical portfolio data (you would implement this endpoint)
+  // Fetch real historical portfolio data
   const { data: historicalData = [] } = useQuery<TimeSeriesData[]>({ 
-    queryKey: ["/api/portfolio/historical", timeHorizon],
-    enabled: false // Disable for now, using generated data as fallback
+    queryKey: ["/api/portfolio/historical/252"],
+    enabled: investments.length > 0
   });
 
   // Generate realistic historical data based on current portfolio

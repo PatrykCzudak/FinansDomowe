@@ -5,6 +5,8 @@ import { insertCategorySchema, insertIncomeSchema, insertExpenseSchema, insertIn
 import { priceService } from "./services/price-service";
 import { aiAssistant } from "./services/ai-assistant";
 import { z } from "zod";
+import yahooFinance from 'yahoo-finance2';
+import { subDays, format } from 'date-fns';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Categories routes
@@ -450,6 +452,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error) {
       res.status(500).json({ message: "Błąd podczas przetwarzania zapytania AI" });
+    }
+  });
+
+  // Portfolio historical data for risk analysis
+  app.get("/api/portfolio/historical/:days", async (req, res) => {
+    try {
+      const days = parseInt(req.params.days) || 252;
+      const investments = await storage.getInvestments();
+      
+      if (investments.length === 0) {
+        res.json([]);
+        return;
+      }
+
+      // Calculate portfolio weights
+      const totalValue = investments.reduce((sum, inv) => 
+        sum + (parseFloat(inv.currentPrice || inv.purchasePrice) * parseFloat(inv.quantity)), 0);
+      
+      const portfolioWeights = investments.map(inv => ({
+        symbol: inv.symbol,
+        weight: (parseFloat(inv.currentPrice || inv.purchasePrice) * parseFloat(inv.quantity)) / totalValue,
+        quantity: parseFloat(inv.quantity)
+      }));
+
+      // Fetch historical data for each symbol
+      const endDate = new Date();
+      const startDate = subDays(endDate, days);
+      
+      const historicalDataPromises = portfolioWeights.map(async (weight) => {
+        try {
+          const historical = await yahooFinance.historical(weight.symbol, {
+            period1: startDate,
+            period2: endDate,
+            interval: '1d'
+          });
+          
+          return {
+            symbol: weight.symbol,
+            weight: weight.weight,
+            data: historical.map(h => ({
+              date: h.date,
+              close: h.close,
+              volume: h.volume
+            }))
+          };
+        } catch (error) {
+          console.error(`Error fetching data for ${weight.symbol}:`, error);
+          return { symbol: weight.symbol, weight: weight.weight, data: [] };
+        }
+      });
+
+      const allHistoricalData = await Promise.all(historicalDataPromises);
+      
+      // Calculate portfolio daily values and returns
+      const dates = allHistoricalData[0]?.data?.map(d => d.date) || [];
+      const portfolioTimeSeries = dates.map(date => {
+        let portfolioValue = 0;
+        let validData = true;
+        
+        for (const stock of allHistoricalData) {
+          const dayData = stock.data.find(d => d.date.getTime() === date.getTime());
+          if (dayData && stock.weight > 0) {
+            portfolioValue += dayData.close * stock.weight * totalValue;
+          } else {
+            validData = false;
+            break;
+          }
+        }
+        
+        return validData ? { date: date.toISOString(), portfolioValue } : null;
+      }).filter(Boolean);
+
+      // Calculate returns
+      const timeSeriesWithReturns = portfolioTimeSeries.map((point, index) => {
+        if (!point || index === 0) {
+          return point ? {
+            ...point,
+            returns: 0,
+            cumulativeReturns: 0
+          } : null;
+        }
+        
+        const previousPoint = portfolioTimeSeries[index - 1];
+        if (!previousPoint) return null;
+        
+        const returns = (point.portfolioValue - previousPoint.portfolioValue) / previousPoint.portfolioValue;
+        const firstPoint = portfolioTimeSeries[0];
+        const cumulativeReturns = firstPoint ? (point.portfolioValue - firstPoint.portfolioValue) / firstPoint.portfolioValue : 0;
+        
+        return {
+          ...point,
+          returns,
+          cumulativeReturns
+        };
+      }).filter(Boolean);
+
+      res.json(timeSeriesWithReturns);
+    } catch (error) {
+      console.error('Error fetching portfolio historical data:', error);
+      res.status(500).json({ message: "Failed to fetch historical data" });
     }
   });
 
