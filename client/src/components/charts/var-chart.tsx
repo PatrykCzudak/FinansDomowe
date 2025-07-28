@@ -26,8 +26,8 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
     );
   }
   
-  // Create histogram with fewer bins and monetary values
-  const binCount = 15; // Reduced bins for better readability
+  // Create histogram with more bins for better granularity
+  const binCount = 30; // Increased bins for better detail
   const currentValue = data[data.length - 1]?.portfolioValue || 10000;
   
   // Convert returns to P&L in PLN
@@ -49,7 +49,7 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
       count,
       frequency: count // Use absolute count for easier interpretation
     };
-  }).filter(bin => bin.count > 0); // Remove empty bins
+  }); // Keep all bins for better visualization
 
   // VaR and ES values are already in PLN (absolute loss amounts)
   const var95PLN = -Math.abs(var95);
@@ -102,36 +102,52 @@ export default function VaRChart({ data, var95, var99, es95, es99 }: VaRChartPro
             <ReferenceLine 
               x={var95PLN} 
               stroke="#f59e0b" 
-              strokeWidth={3}
-              strokeDasharray="5 5"
-              label="VaR 95%"
+              strokeWidth={4}
+              strokeDasharray="8 4"
+              label={{
+                value: "VaR 95%",
+                offset: 10,
+                position: "top"
+              }}
             />
             
             {/* VaR 99% line */}
             <ReferenceLine 
               x={var99PLN} 
               stroke="#ef4444" 
-              strokeWidth={3}
-              strokeDasharray="5 5"
-              label="VaR 99%"
+              strokeWidth={4}
+              strokeDasharray="8 4"
+              label={{
+                value: "VaR 99%",
+                offset: 10,
+                position: "top"
+              }}
             />
             
             {/* ES 95% line */}
             <ReferenceLine 
               x={es95PLN} 
               stroke="#f97316" 
-              strokeWidth={2}
-              strokeDasharray="8 2"
-              label="ES 95%"
+              strokeWidth={3}
+              strokeDasharray="12 3"
+              label={{
+                value: "ES 95%",
+                offset: 10,
+                position: "bottom"
+              }}
             />
             
             {/* ES 99% line */}
             <ReferenceLine 
               x={es99PLN} 
               stroke="#dc2626" 
-              strokeWidth={2}
-              strokeDasharray="8 2"
-              label="ES 99%"
+              strokeWidth={3}
+              strokeDasharray="12 3"
+              label={{
+                value: "ES 99%",
+                offset: 10,
+                position: "bottom"
+              }}
             />
           </BarChart>
         </ResponsiveContainer>

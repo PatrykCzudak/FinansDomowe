@@ -237,42 +237,91 @@ export default function RiskAnalysis() {
                 </CardHeader>
                 <CardContent>
                   {riskMetrics ? (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 bg-blue-50 rounded-lg">
-                        <h4 className="font-semibold text-blue-800">Beta</h4>
-                        <p className="text-2xl font-bold text-blue-600">
-                          {riskMetrics.beta.toFixed(2)}
-                        </p>
-                        <p className="text-sm text-blue-600">
-                          Wrażliwość na ruchy rynku
-                        </p>
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                          <h4 className="font-semibold text-blue-800 dark:text-blue-200">Beta</h4>
+                          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                            {riskMetrics.beta.toFixed(2)}
+                          </p>
+                          <p className="text-sm text-blue-600 dark:text-blue-300">
+                            Wrażliwość na ruchy rynku
+                          </p>
+                        </div>
+                        <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                          <h4 className="font-semibold text-green-800 dark:text-green-200">Sharpe Ratio</h4>
+                          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                            {riskMetrics.sharpeRatio.toFixed(2)}
+                          </p>
+                          <p className="text-sm text-green-600 dark:text-green-300">
+                            Stosunek zwrotu do ryzyka
+                          </p>
+                        </div>
+                        <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                          <h4 className="font-semibold text-purple-800 dark:text-purple-200">Max Drawdown</h4>
+                          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                            {(riskMetrics.maxDrawdown * 100).toFixed(1)}%
+                          </p>
+                          <p className="text-sm text-purple-600 dark:text-purple-300">
+                            Maksymalny spadek wartości
+                          </p>
+                        </div>
+                        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                          <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">Volatility</h4>
+                          <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                            {(riskMetrics.volatility * 100).toFixed(1)}%
+                          </p>
+                          <p className="text-sm text-yellow-600 dark:text-yellow-300">
+                            Zmienność zwrotów
+                          </p>
+                        </div>
                       </div>
-                      <div className="p-4 bg-green-50 rounded-lg">
-                        <h4 className="font-semibold text-green-800">Sharpe Ratio</h4>
-                        <p className="text-2xl font-bold text-green-600">
-                          {riskMetrics.sharpeRatio.toFixed(2)}
-                        </p>
-                        <p className="text-sm text-green-600">
-                          Stosunek zwrotu do ryzyka
-                        </p>
-                      </div>
-                      <div className="p-4 bg-purple-50 rounded-lg">
-                        <h4 className="font-semibold text-purple-800">Max Drawdown</h4>
-                        <p className="text-2xl font-bold text-purple-600">
-                          {(riskMetrics.maxDrawdown * 100).toFixed(1)}%
-                        </p>
-                        <p className="text-sm text-purple-600">
-                          Maksymalny spadek wartości
-                        </p>
-                      </div>
-                      <div className="p-4 bg-yellow-50 rounded-lg">
-                        <h4 className="font-semibold text-yellow-800">Volatility</h4>
-                        <p className="text-2xl font-bold text-yellow-600">
-                          {(riskMetrics.volatility * 100).toFixed(1)}%
-                        </p>
-                        <p className="text-sm text-yellow-600">
-                          Zmienność zwrotów
-                        </p>
+
+                      {/* Detailed explanations */}
+                      <div className="space-y-4">
+                        <h5 className="font-semibold text-gray-900 dark:text-gray-100">Szczegółowe wyjaśnienia:</h5>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-500">
+                            <h6 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Beta ({riskMetrics.beta.toFixed(2)})</h6>
+                            <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                              <li>• Beta = 1: Portfolio porusza się dokładnie z rynkiem</li>
+                              <li>• Beta {'>'} 1: Większa zmienność niż rynek (wyższe ryzyko i potencjał)</li>
+                              <li>• Beta {'<'} 1: Mniejsza zmienność niż rynek (niższe ryzyko)</li>
+                              <li>• Beta {'<'} 0: Portfolio porusza się przeciwnie do rynku</li>
+                            </ul>
+                          </div>
+
+                          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border-l-4 border-green-500">
+                            <h6 className="font-semibold text-green-900 dark:text-green-100 mb-2">Sharpe Ratio ({riskMetrics.sharpeRatio.toFixed(2)})</h6>
+                            <ul className="text-sm text-green-800 dark:text-green-200 space-y-1">
+                              <li>• {'>'} 2.0: Doskonały zwrot względem ryzyka</li>
+                              <li>• 1.0-2.0: Dobry stosunek zwrotu do ryzyka</li>
+                              <li>• 0.5-1.0: Akceptowalny</li>
+                              <li>• {'<'} 0.5: Słaby - może nie warto ryzyka</li>
+                            </ul>
+                          </div>
+
+                          <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border-l-4 border-purple-500">
+                            <h6 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">Max Drawdown ({(riskMetrics.maxDrawdown * 100).toFixed(1)}%)</h6>
+                            <p className="text-sm text-purple-800 dark:text-purple-200">
+                              Największy historyczny spadek od szczytu do dołka. Pokazuje najgorszy scenariusz, 
+                              jaki mógł się zdarzyć. Wyższy drawdown = większe ryzyko znacznych strat w krótkim czasie.
+                            </p>
+                          </div>
+
+                          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-l-4 border-yellow-500">
+                            <h6 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-2">Volatility ({(riskMetrics.volatility * 100).toFixed(1)}%)</h6>
+                            <div className="text-sm text-yellow-800 dark:text-yellow-200">
+                              <p className="mb-2">Roczna zmienność zwrotów (odchylenie standardowe):</p>
+                              <ul className="space-y-1">
+                                <li>• Akcje: 15-25% (typowe)</li>
+                                <li>• Obligacje: 3-8%</li>
+                                <li>• Kryptowaluty: 50-100%+</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ) : (
