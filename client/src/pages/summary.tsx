@@ -101,7 +101,6 @@ export default function SummaryPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Oszczędności</p>
                 <p className="text-2xl font-bold">{savings.toFixed(2)} zł</p>
-                <p className="text-sm text-green-600">Po wydatkach i celach oszczędnościowych</p>
                 {totalSavingsAdded > 0 && (
                   <p className="text-xs text-orange-500">-{totalSavingsAdded.toFixed(2)} zł przeznaczono do celów</p>
                 )}
