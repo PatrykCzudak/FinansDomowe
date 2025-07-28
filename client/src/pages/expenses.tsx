@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useBudget } from "@/hooks/use-budget";
 import ExpenseForm from "@/components/forms/expense-form";
+import { MonthSelector } from "@/components/ui/month-selector";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { Category, Expense } from "@shared/schema";
