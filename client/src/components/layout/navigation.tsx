@@ -22,7 +22,7 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
   };
 
   return (
-    <nav className="bg-white border-b border-gray-200">
+    <nav className="bg-background border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex space-x-8">
           {tabs.map((tab) => {
@@ -33,10 +33,10 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
               <button
                 key={tab.id}
                 onClick={() => handleTabClick(tab)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${
+                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center transition-colors ${
                   isActive
                     ? "border-primary text-primary"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"
                 }`}
               >
                 <Icon className="mr-2 h-4 w-4" />
