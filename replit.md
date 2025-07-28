@@ -44,11 +44,16 @@ Preferred communication style: Simple, everyday language.
 - **Admin/Budget**: Category and income management
 - **Expenses**: Expense tracking and categorization
 - **Summary**: Financial overview with charts and analytics
-- **Investments**: Portfolio management and performance tracking
+- **Investments**: Portfolio management with three tabs:
+  - Portfolio: Investment holdings, allocation charts, performance tracking
+  - AI Asystent: Automated financial analysis and recommendations
+  - Dane Rynkowe: Real-time price updates and market data search
 
 ### UI Components
 - **Forms**: Category, Income, Expense, and Investment forms with validation
 - **Charts**: Budget comparison, category breakdown, trends, allocation, and performance charts
+- **AI Components**: AI Assistant with portfolio/budget analysis and custom queries
+- **Price Components**: Price updater with Yahoo Finance integration and symbol search
 - **Layout**: Header navigation and tabbed interface
 
 ## Data Flow
@@ -66,9 +71,22 @@ Preferred communication style: Simple, everyday language.
 - **Neon Database**: Serverless PostgreSQL hosting
 - **Connection**: Uses DATABASE_URL environment variable
 
+### Market Data APIs
+- **Yahoo Finance**: Real-time stock prices, ETF data, market indices
+- **Auto-updates**: Scheduled price updates every 15 minutes during trading hours
+- **Symbol Search**: Company and instrument search functionality
+- **Historical Data**: Price history and performance tracking
+
+### AI Services
+- **AI Assistant**: Intelligent financial analysis and recommendations
+- **Portfolio Analysis**: Automated diversification and performance insights
+- **Budget Analysis**: Spending pattern recognition and optimization suggestions
+- **Custom Queries**: Interactive financial advice system
+
 ### Development Tools
 - **Replit Integration**: Cartographer plugin for Replit environment
 - **Error Overlay**: Runtime error modal for development
+- **Task Scheduling**: Node-cron for automated price updates
 
 ### UI Libraries
 - **Radix UI**: Headless UI components for accessibility

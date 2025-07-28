@@ -76,7 +76,9 @@ export class MemStorage implements IStorage {
       const id = randomUUID();
       const category: Category = {
         id,
-        ...cat,
+        name: cat.name,
+        color: cat.color,
+        budget: cat.budget,
         createdAt: new Date(),
       };
       this.categories.set(id, category);
@@ -86,7 +88,9 @@ export class MemStorage implements IStorage {
       const id = randomUUID();
       const income: Income = {
         id,
-        ...inc,
+        name: inc.name,
+        amount: inc.amount,
+        frequency: inc.frequency,
         createdAt: new Date(),
       };
       this.incomes.set(id, income);

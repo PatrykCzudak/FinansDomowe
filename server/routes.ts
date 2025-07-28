@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertCategorySchema, insertIncomeSchema, insertExpenseSchema, insertInvestmentSchema } from "@shared/schema";
+import { priceService } from "./services/price-service";
+import { aiAssistant } from "./services/ai-assistant";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -240,6 +242,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete investment" });
+    }
+  });
+
+  // Price service routes
+  app.get("/api/prices/update", async (req, res) => {
+    try {
+      await priceService.updateAllPrices();
+      res.json({ message: "Ceny zostały zaktualizowane" });
+    } catch (error) {
+      res.status(500).json({ message: "Błąd podczas aktualizacji cen" });
+    }
+  });
+
+  app.get("/api/prices/:symbol", async (req, res) => {
+    try {
+      const { symbol } = req.params;
+      const price = await priceService.getPrice(symbol);
+      if (price === null) {
+        res.status(404).json({ message: "Nie znaleziono ceny dla symbolu" });
+        return;
+      }
+      res.json({ symbol, price });
+    } catch (error) {
+      res.status(500).json({ message: "Błąd podczas pobierania ceny" });
+    }
+  });
+
+  app.get("/api/search/:query", async (req, res) => {
+    try {
+      const { query } = req.params;
+      const results = await priceService.searchSymbol(query);
+      res.json(results);
+    } catch (error) {
+      res.status(500).json({ message: "Błąd podczas wyszukiwania" });
+    }
+  });
+
+  app.get("/api/historical/:symbol", async (req, res) => {
+    try {
+      const { symbol } = req.params;
+      const { period = '1y' } = req.query;
+      const data = await priceService.getHistoricalData(symbol, period as string);
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({ message: "Błąd podczas pobierania danych historycznych" });
+    }
+  });
+
+  // AI Assistant routes
+  app.get("/api/ai/analyze/portfolio", async (req, res) => {
+    try {
+      const analysis = await aiAssistant.analyzePortfolio();
+      res.json(analysis);
+    } catch (error) {
+      res.status(500).json({ message: "Błąd podczas analizy portfolio" });
+    }
+  });
+
+  app.get("/api/ai/analyze/budget", async (req, res) => {
+    try {
+      const analysis = await aiAssistant.analyzeBudget();
+      res.json(analysis);
+    } catch (error) {
+      res.status(500).json({ message: "Błąd podczas analizy budżetu" });
+    }
+  });
+
+  app.get("/api/ai/recommendations", async (req, res) => {
+    try {
+      const recommendations = await aiAssistant.generateRecommendations();
+      res.json(recommendations);
+    } catch (error) {
+      res.status(500).json({ message: "Błąd podczas generowania rekomendacji" });
+    }
+  });
+
+  app.post("/api/ai/query", async (req, res) => {
+    try {
+      const query = req.body;
+      const result = await aiAssistant.processQuery(query);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "Błąd podczas przetwarzania zapytania AI" });
     }
   });
 
