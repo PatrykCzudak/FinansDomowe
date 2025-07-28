@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useBudget } from "@/hooks/use-budget";
 import { insertInvestmentSchema, type Investment } from "@shared/schema";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Search, Loader2 } from "lucide-react";
 import { z } from "zod";
 
 const formSchema = insertInvestmentSchema.extend({
@@ -23,6 +27,9 @@ interface InvestmentFormProps {
 
 export default function InvestmentForm({ investment, onSuccess, onCancel }: InvestmentFormProps) {
   const { createInvestment, updateInvestment } = useBudget();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedTicker, setSelectedTicker] = useState(investment?.symbol || "");
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -35,6 +42,50 @@ export default function InvestmentForm({ investment, onSuccess, onCancel }: Inve
       purchaseDate: investment?.purchaseDate || new Date().toISOString().split('T')[0],
     },
   });
+
+  // Search symbols mutation
+  const searchMutation = useMutation({
+    mutationFn: async (query: string) => {
+      const response = await apiRequest("GET", `/api/search/${encodeURIComponent(query)}`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setSearchResults(data || []);
+    }
+  });
+
+  // Get current price mutation
+  const getPriceMutation = useMutation({
+    mutationFn: async (symbol: string) => {
+      const response = await apiRequest("GET", `/api/prices/${symbol}`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      form.setValue("purchasePrice", data.price.toString());
+    }
+  });
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      searchMutation.mutate(searchQuery.trim());
+    }
+  };
+
+  const handleTickerSelect = (result: any) => {
+    setSelectedTicker(result.symbol);
+    form.setValue("symbol", result.symbol);
+    form.setValue("name", result.shortname || result.longname || result.symbol);
+    
+    // Automatycznie ustal typ na podstawie typeDisp
+    const type = result.typeDisp?.toLowerCase().includes('etf') ? 'etf' : 'akcje';
+    form.setValue("type", type);
+    
+    // Pobierz aktualną cenę
+    getPriceMutation.mutate(result.symbol);
+    
+    setSearchResults([]);
+    setSearchQuery("");
+  };
 
   const onSubmit = async (data: FormData) => {
     try {

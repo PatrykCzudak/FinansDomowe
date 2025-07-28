@@ -1,4 +1,8 @@
 import { 
+  categories,
+  incomes,
+  expenses,
+  investments,
   type Category, 
   type Income, 
   type Expense, 
@@ -8,7 +12,8 @@ import {
   type InsertExpense,
   type InsertInvestment
 } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, and, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   // Categories
@@ -42,203 +47,133 @@ export interface IStorage {
   deleteInvestment(id: string): Promise<boolean>;
 }
 
-export class MemStorage implements IStorage {
-  private categories: Map<string, Category>;
-  private incomes: Map<string, Income>;
-  private expenses: Map<string, Expense>;
-  private investments: Map<string, Investment>;
-
-  constructor() {
-    this.categories = new Map();
-    this.incomes = new Map();
-    this.expenses = new Map();
-    this.investments = new Map();
-
-    // Initialize with some default categories
-    this.initializeDefaults();
-  }
-
-  private initializeDefaults() {
-    const defaultCategories = [
-      { name: "Żywność", color: "#3B82F6", budget: "1500.00" },
-      { name: "Transport", color: "#10B981", budget: "800.00" },
-      { name: "Rozrywka", color: "#8B5CF6", budget: "600.00" },
-      { name: "Rachunki", color: "#F59E0B", budget: "1200.00" },
-      { name: "Zdrowie", color: "#EF4444", budget: "400.00" },
-    ];
-
-    const defaultIncomes = [
-      { name: "Wynagrodzenie", amount: "5500.00", frequency: "monthly" },
-      { name: "Freelancing", amount: "1200.00", frequency: "monthly" },
-    ];
-
-    defaultCategories.forEach(cat => {
-      const id = randomUUID();
-      const category: Category = {
-        id,
-        name: cat.name,
-        color: cat.color,
-        budget: cat.budget,
-        createdAt: new Date(),
-      };
-      this.categories.set(id, category);
-    });
-
-    defaultIncomes.forEach(inc => {
-      const id = randomUUID();
-      const income: Income = {
-        id,
-        name: inc.name,
-        amount: inc.amount,
-        frequency: inc.frequency,
-        createdAt: new Date(),
-      };
-      this.incomes.set(id, income);
-    });
-  }
-
+export class DatabaseStorage implements IStorage {
   // Categories
   async getCategories(): Promise<Category[]> {
-    return Array.from(this.categories.values());
+    return await db.select().from(categories);
   }
 
   async getCategoryById(id: string): Promise<Category | undefined> {
-    return this.categories.get(id);
+    const [category] = await db.select().from(categories).where(eq(categories.id, id));
+    return category || undefined;
   }
 
-  async createCategory(insertCategory: InsertCategory): Promise<Category> {
-    const id = randomUUID();
-    const category: Category = {
-      id,
-      ...insertCategory,
-      createdAt: new Date(),
-    };
-    this.categories.set(id, category);
-    return category;
+  async createCategory(category: InsertCategory): Promise<Category> {
+    const [newCategory] = await db.insert(categories).values(category).returning();
+    return newCategory;
   }
 
-  async updateCategory(id: string, updateData: Partial<InsertCategory>): Promise<Category | undefined> {
-    const category = this.categories.get(id);
-    if (!category) return undefined;
-
-    const updated: Category = { ...category, ...updateData };
-    this.categories.set(id, updated);
-    return updated;
+  async updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category | undefined> {
+    const [updatedCategory] = await db
+      .update(categories)
+      .set(category)
+      .where(eq(categories.id, id))
+      .returning();
+    return updatedCategory || undefined;
   }
 
   async deleteCategory(id: string): Promise<boolean> {
-    return this.categories.delete(id);
+    const result = await db.delete(categories).where(eq(categories.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
   // Incomes
   async getIncomes(): Promise<Income[]> {
-    return Array.from(this.incomes.values());
+    return await db.select().from(incomes);
   }
 
   async getIncomeById(id: string): Promise<Income | undefined> {
-    return this.incomes.get(id);
+    const [income] = await db.select().from(incomes).where(eq(incomes.id, id));
+    return income || undefined;
   }
 
-  async createIncome(insertIncome: InsertIncome): Promise<Income> {
-    const id = randomUUID();
-    const income: Income = {
-      id,
-      ...insertIncome,
-      createdAt: new Date(),
-    };
-    this.incomes.set(id, income);
-    return income;
+  async createIncome(income: InsertIncome): Promise<Income> {
+    const [newIncome] = await db.insert(incomes).values(income).returning();
+    return newIncome;
   }
 
-  async updateIncome(id: string, updateData: Partial<InsertIncome>): Promise<Income | undefined> {
-    const income = this.incomes.get(id);
-    if (!income) return undefined;
-
-    const updated: Income = { ...income, ...updateData };
-    this.incomes.set(id, updated);
-    return updated;
+  async updateIncome(id: string, income: Partial<InsertIncome>): Promise<Income | undefined> {
+    const [updatedIncome] = await db
+      .update(incomes)
+      .set(income)
+      .where(eq(incomes.id, id))
+      .returning();
+    return updatedIncome || undefined;
   }
 
   async deleteIncome(id: string): Promise<boolean> {
-    return this.incomes.delete(id);
+    const result = await db.delete(incomes).where(eq(incomes.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
   // Expenses
   async getExpenses(): Promise<Expense[]> {
-    return Array.from(this.expenses.values());
+    return await db.select().from(expenses);
   }
 
   async getExpenseById(id: string): Promise<Expense | undefined> {
-    return this.expenses.get(id);
+    const [expense] = await db.select().from(expenses).where(eq(expenses.id, id));
+    return expense || undefined;
   }
 
   async getExpensesByCategory(categoryId: string): Promise<Expense[]> {
-    return Array.from(this.expenses.values()).filter(expense => expense.categoryId === categoryId);
+    return await db.select().from(expenses).where(eq(expenses.categoryId, categoryId));
   }
 
   async getExpensesByDateRange(startDate: string, endDate: string): Promise<Expense[]> {
-    return Array.from(this.expenses.values()).filter(expense => 
-      expense.date >= startDate && expense.date <= endDate
-    );
+    return await db
+      .select()
+      .from(expenses)
+      .where(and(gte(expenses.date, startDate), lte(expenses.date, endDate)));
   }
 
-  async createExpense(insertExpense: InsertExpense): Promise<Expense> {
-    const id = randomUUID();
-    const expense: Expense = {
-      id,
-      ...insertExpense,
-      createdAt: new Date(),
-    };
-    this.expenses.set(id, expense);
-    return expense;
+  async createExpense(expense: InsertExpense): Promise<Expense> {
+    const [newExpense] = await db.insert(expenses).values(expense).returning();
+    return newExpense;
   }
 
-  async updateExpense(id: string, updateData: Partial<InsertExpense>): Promise<Expense | undefined> {
-    const expense = this.expenses.get(id);
-    if (!expense) return undefined;
-
-    const updated: Expense = { ...expense, ...updateData };
-    this.expenses.set(id, updated);
-    return updated;
+  async updateExpense(id: string, expense: Partial<InsertExpense>): Promise<Expense | undefined> {
+    const [updatedExpense] = await db
+      .update(expenses)
+      .set(expense)
+      .where(eq(expenses.id, id))
+      .returning();
+    return updatedExpense || undefined;
   }
 
   async deleteExpense(id: string): Promise<boolean> {
-    return this.expenses.delete(id);
+    const result = await db.delete(expenses).where(eq(expenses.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
   // Investments
   async getInvestments(): Promise<Investment[]> {
-    return Array.from(this.investments.values());
+    return await db.select().from(investments);
   }
 
   async getInvestmentById(id: string): Promise<Investment | undefined> {
-    return this.investments.get(id);
+    const [investment] = await db.select().from(investments).where(eq(investments.id, id));
+    return investment || undefined;
   }
 
-  async createInvestment(insertInvestment: InsertInvestment): Promise<Investment> {
-    const id = randomUUID();
-    const investment: Investment = {
-      id,
-      ...insertInvestment,
-      currentPrice: insertInvestment.purchasePrice, // Initial current price equals purchase price
-      createdAt: new Date(),
-    };
-    this.investments.set(id, investment);
-    return investment;
+  async createInvestment(investment: InsertInvestment): Promise<Investment> {
+    const [newInvestment] = await db.insert(investments).values(investment).returning();
+    return newInvestment;
   }
 
-  async updateInvestment(id: string, updateData: Partial<InsertInvestment>): Promise<Investment | undefined> {
-    const investment = this.investments.get(id);
-    if (!investment) return undefined;
-
-    const updated: Investment = { ...investment, ...updateData };
-    this.investments.set(id, updated);
-    return updated;
+  async updateInvestment(id: string, investment: Partial<InsertInvestment>): Promise<Investment | undefined> {
+    const [updatedInvestment] = await db
+      .update(investments)
+      .set(investment)
+      .where(eq(investments.id, id))
+      .returning();
+    return updatedInvestment || undefined;
   }
 
   async deleteInvestment(id: string): Promise<boolean> {
-    return this.investments.delete(id);
+    const result = await db.delete(investments).where(eq(investments.id, id));
+    return (result.rowCount || 0) > 0;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

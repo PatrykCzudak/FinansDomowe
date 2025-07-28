@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, Search, TrendingUp, TrendingDown, Clock, CheckCircle } from "lucide-react";
+import CandlestickChart from "./candlestick-chart";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -160,76 +161,8 @@ export default function PriceUpdater() {
         </CardContent>
       </Card>
 
-      {/* Symbol Search */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Search className="mr-2 h-5 w-5 text-green-600" />
-            Wyszukaj Instrumenty Finansowe
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex space-x-2">
-              <Input
-                placeholder="Wpisz nazwę lub symbol (np. AAPL, Tesla, Bitcoin)"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                className="flex-1"
-              />
-              <Button
-                onClick={handleSearch}
-                disabled={searchMutation.isPending || !searchQuery.trim()}
-              >
-                {searchMutation.isPending ? (
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Search className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-
-            {/* Search Results */}
-            {searchResults.length > 0 && (
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                <h4 className="font-medium text-gray-900">Wyniki wyszukiwania:</h4>
-                {searchResults.map((result, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        {getTypeIcon(result.typeDisp)}
-                        <span className="font-medium text-gray-900">{result.symbol}</span>
-                        <Badge className={getExchangeBadgeColor(result.exchange)}>
-                          {result.exchange}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-gray-600">{result.shortname || result.longname}</p>
-                      {result.typeDisp && (
-                        <p className="text-xs text-gray-500">{result.typeDisp}</p>
-                      )}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleGetPrice(result.symbol)}
-                      disabled={getPriceMutation.isPending}
-                    >
-                      Sprawdź cenę
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {searchMutation.data && searchResults.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                Brak wyników dla "{searchQuery}"
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Chart Component */}
+      <CandlestickChart />
 
       {/* Market Data Info */}
       <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
