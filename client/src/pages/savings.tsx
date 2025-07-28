@@ -91,6 +91,7 @@ export default function SavingsPage() {
       apiRequest("POST", `/api/savings-goals/${id}/add-savings`, { amount }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/savings-goals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/savings-transactions"] });
       setShowAddSavingsDialog(false);
       setAddAmount("");
       setSelectedGoal(null);

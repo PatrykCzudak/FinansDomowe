@@ -20,9 +20,7 @@ export default function SummaryPage() {
     enabled: !!(year && month)
   });
 
-  // Debug logging
-  console.log("Selected month:", selectedMonth, "Year:", year, "Month:", month);
-  console.log("Savings transactions:", savingsTransactions);
+
 
   const monthlyExpenses = expenses.filter(expense => expense.date.startsWith(selectedMonth));
   
