@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertTriangle, Calculator, TrendingDown, BarChart3 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import VaRChart from "@/components/charts/var-chart";
 import type { Investment } from "@shared/schema";
 
 interface RiskMetrics {
@@ -25,6 +26,37 @@ export default function RiskAnalysis() {
   const [timeHorizon, setTimeHorizon] = useState("1");
   const [riskMetrics, setRiskMetrics] = useState<RiskMetrics | null>(null);
   const [calculating, setCalculating] = useState(false);
+
+  // Generate mock historical data for charts
+  const generateMockData = () => {
+    const data = [];
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 252); // 1 year of trading days
+    
+    let cumulativeReturn = 0;
+    const portfolioValue = investments.reduce((sum, inv) => 
+      sum + (parseFloat(inv.currentPrice || inv.purchasePrice) * parseFloat(inv.quantity)), 0) || 10000;
+    
+    for (let i = 0; i < 252; i++) {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + i);
+      
+      // Generate realistic daily returns (mean-reverting with volatility)
+      const dailyReturn = (Math.random() - 0.5) * 0.04 + 0.0002; // ~1% daily volatility, slight positive drift
+      cumulativeReturn += dailyReturn;
+      
+      data.push({
+        date: date.toISOString(),
+        portfolioValue: portfolioValue * (1 + cumulativeReturn),
+        returns: dailyReturn,
+        cumulativeReturns: cumulativeReturn
+      });
+    }
+    
+    return data;
+  };
+
+  const historicalData = generateMockData();
 
   const calculateVaR = async () => {
     setCalculating(true);
@@ -92,20 +124,19 @@ export default function RiskAnalysis() {
             <p className="text-blue-700">Liczba pozycji: <span className="font-bold">{investments.length}</span></p>
           </div>
 
-          <Tabs defaultValue="var" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="var">VaR</TabsTrigger>
-              <TabsTrigger value="es">Expected Shortfall</TabsTrigger>
+          <Tabs defaultValue="var-es" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="var-es">VaR & Expected Shortfall</TabsTrigger>
               <TabsTrigger value="metrics">Metryki Ryzyka</TabsTrigger>
               <TabsTrigger value="stress">Test Stresu</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="var" className="space-y-4">
+            <TabsContent value="var-es" className="space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Calculator className="h-4 w-4" />
-                    Value at Risk (VaR)
+                    Value at Risk (VaR) & Expected Shortfall (ES)
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -135,77 +166,59 @@ export default function RiskAnalysis() {
                     disabled={calculating}
                     className="w-full"
                   >
-                    {calculating ? "Obliczanie..." : "Oblicz VaR"}
+                    {calculating ? "Obliczanie..." : "Oblicz VaR i Expected Shortfall"}
                   </Button>
 
                   {riskMetrics && (
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                      <div className="p-4 bg-red-50 rounded-lg">
-                        <h4 className="font-semibold text-red-800">VaR 95%</h4>
-                        <p className="text-2xl font-bold text-red-600">
-                          {riskMetrics.var95.toFixed(2)} zł
-                        </p>
-                        <p className="text-sm text-red-600">
-                          Maksymalna strata z 95% prawdopodobieństwem
-                        </p>
+                    <div className="space-y-6">
+                      {/* Risk Metrics Cards */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="p-4 bg-red-50 rounded-lg">
+                          <h4 className="font-semibold text-red-800">VaR 95%</h4>
+                          <p className="text-xl font-bold text-red-600">
+                            {riskMetrics.var95.toFixed(2)} zł
+                          </p>
+                          <p className="text-xs text-red-600">
+                            Max strata 95%
+                          </p>
+                        </div>
+                        <div className="p-4 bg-red-100 rounded-lg">
+                          <h4 className="font-semibold text-red-800">VaR 99%</h4>
+                          <p className="text-xl font-bold text-red-700">
+                            {riskMetrics.var99.toFixed(2)} zł
+                          </p>
+                          <p className="text-xs text-red-700">
+                            Max strata 99%
+                          </p>
+                        </div>
+                        <div className="p-4 bg-orange-50 rounded-lg">
+                          <h4 className="font-semibold text-orange-800">ES 95%</h4>
+                          <p className="text-xl font-bold text-orange-600">
+                            {riskMetrics.expectedShortfall95.toFixed(2)} zł
+                          </p>
+                          <p className="text-xs text-orange-600">
+                            Średnia w tail 5%
+                          </p>
+                        </div>
+                        <div className="p-4 bg-orange-100 rounded-lg">
+                          <h4 className="font-semibold text-orange-800">ES 99%</h4>
+                          <p className="text-xl font-bold text-orange-700">
+                            {riskMetrics.expectedShortfall99.toFixed(2)} zł
+                          </p>
+                          <p className="text-xs text-orange-700">
+                            Średnia w tail 1%
+                          </p>
+                        </div>
                       </div>
-                      <div className="p-4 bg-red-100 rounded-lg">
-                        <h4 className="font-semibold text-red-800">VaR 99%</h4>
-                        <p className="text-2xl font-bold text-red-700">
-                          {riskMetrics.var99.toFixed(2)} zł
-                        </p>
-                        <p className="text-sm text-red-700">
-                          Maksymalna strata z 99% prawdopodobieństwem
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
 
-            <TabsContent value="es" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <TrendingDown className="h-4 w-4" />
-                    Expected Shortfall (ES)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600">
-                    Expected Shortfall mierzy średnią stratę w najgorszych scenariuszach,
-                    przewyższających wartość VaR.
-                  </p>
-                  
-                  <Button 
-                    onClick={calculateExpectedShortfall} 
-                    disabled={calculating}
-                    className="w-full"
-                  >
-                    {calculating ? "Obliczanie..." : "Oblicz Expected Shortfall"}
-                  </Button>
-
-                  {riskMetrics && (
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                      <div className="p-4 bg-orange-50 rounded-lg">
-                        <h4 className="font-semibold text-orange-800">ES 95%</h4>
-                        <p className="text-2xl font-bold text-orange-600">
-                          {riskMetrics.expectedShortfall95.toFixed(2)} zł
-                        </p>
-                        <p className="text-sm text-orange-600">
-                          Średnia strata w najgorszych 5% przypadków
-                        </p>
-                      </div>
-                      <div className="p-4 bg-orange-100 rounded-lg">
-                        <h4 className="font-semibold text-orange-800">ES 99%</h4>
-                        <p className="text-2xl font-bold text-orange-700">
-                          {riskMetrics.expectedShortfall99.toFixed(2)} zł
-                        </p>
-                        <p className="text-sm text-orange-700">
-                          Średnia strata w najgorszych 1% przypadków
-                        </p>
-                      </div>
+                      {/* VaR Chart */}
+                      <VaRChart 
+                        data={historicalData}
+                        var95={riskMetrics.var95}
+                        var99={riskMetrics.var99}
+                        es95={riskMetrics.expectedShortfall95}
+                        es99={riskMetrics.expectedShortfall99}
+                      />
                     </div>
                   )}
                 </CardContent>
