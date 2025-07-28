@@ -16,8 +16,13 @@ export default function SummaryPage() {
 
   const [year, month] = selectedMonth.split('-').map(Number);
   const { data: savingsTransactions = [] } = useQuery<SavingsTransaction[]>({ 
-    queryKey: ["/api/savings-transactions", year, month] 
+    queryKey: ["/api/savings-transactions", year, month],
+    enabled: !!(year && month)
   });
+
+  // Debug logging
+  console.log("Selected month:", selectedMonth, "Year:", year, "Month:", month);
+  console.log("Savings transactions:", savingsTransactions);
 
   const monthlyExpenses = expenses.filter(expense => expense.date.startsWith(selectedMonth));
   
@@ -97,9 +102,12 @@ export default function SummaryPage() {
                 <p className="text-sm text-muted-foreground">Oszczędności</p>
                 <p className="text-2xl font-bold">{savings.toFixed(2)} zł</p>
                 {totalSavingsAdded > 0 ? (
-                  <p className="text-sm text-green-600">+{totalSavingsAdded.toFixed(2)} zł dodano</p>
+                  <p className="text-sm text-green-600">+{totalSavingsAdded.toFixed(2)} zł dodano do celów</p>
                 ) : (
                   <p className="text-sm text-green-600">W wybranym miesiącu</p>
+                )}
+                {savingsTransactions.length > 0 && (
+                  <p className="text-xs text-muted-foreground">{savingsTransactions.length} transakcji oszczędnościowych</p>
                 )}
               </div>
               <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-full">
