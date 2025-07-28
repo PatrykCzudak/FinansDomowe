@@ -1,8 +1,8 @@
-# Personal Budget Management Application - Python FastAPI Backend
+# Personal Budget Management Application
 
 ## Overview
 
-This is a comprehensive personal budget management backend built exclusively with Python FastAPI and PostgreSQL. The application provides advanced financial tracking, portfolio management, and sophisticated risk analysis using classical statistical methods. All other backends have been removed - only Python FastAPI remains.
+This is a full-stack personal budget management application built with React, TypeScript, Express.js, and PostgreSQL. The application provides comprehensive financial tracking including categories, income, expenses, and investments with interactive charts and data visualization.
 
 ## User Preferences
 
@@ -112,32 +112,9 @@ Preferred communication style: Simple, everyday language.
 
 The application follows a monorepo structure with shared TypeScript types between client and server, ensuring type safety across the full stack. The modular architecture allows for easy extension of financial tracking features.
 
-## Current Status - 2025-01-28: Backend Operational ✅
-
-**The Personal Budget Management application backend is now fully operational!**
-
-- **✅ Python FastAPI Backend**: Running successfully on port 5000
-- **✅ PostgreSQL Database**: Connected and tables created 
-- **✅ API Endpoints**: All CRUD operations working (categories, expenses, investments, savings goals)
-- **✅ Auto-reload**: Development server watches for code changes
-- **✅ API Documentation**: Available at http://localhost:5000/docs
-- **✅ Risk Analysis**: VaR calculations, portfolio metrics, and stress testing implemented
-
-**Quick Start Commands:**
-```bash
-# Start the backend server
-./start.sh
-
-# Or run directly:
-cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 5000 --reload
-```
-
-**API Base URL**: http://localhost:5000
-**Available Endpoints**: /api/categories, /api/expenses, /api/investments, /api/savings-goals, /api/risk/var-calculation
-
 ## Recent Changes: Latest modifications with dates
 
-### 2025-01-28: Backend Debugging & Operational Setup
+### 2025-01-28: Month Selector & Dark Mode Implementation
 - **Month Context**: Added global month context (`MonthProvider`) that controls expense filtering across the entire application
 - **Header Month Selector**: Replaced static "Lipiec 2025" badge with interactive `MonthSelector` dropdown in header
 - **Month-based Expense Filtering**: Expenses are now filtered by the selected month from the header, while budgets remain persistent

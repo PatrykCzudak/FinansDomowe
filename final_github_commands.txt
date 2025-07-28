@@ -1,0 +1,24 @@
+🚀 OSTATECZNE KOMENDY DO WYSŁANIA NA GITHUB:
+
+1. Przejdź do folderu:
+cd /home/runner/workspace/personal-budget-management
+
+2. Dodaj swoje repo (zamień URL na swój):
+git remote add origin https://github.com/TWOJA-NAZWA/personal-budget-management.git
+
+3. Wyślij kod:
+git push -u origin main
+
+GOTOWE! 🎉
+
+Co będziesz mieć na GitHub:
+✅ Python FastAPI backend (folder backend/)
+✅ React + TypeScript frontend (folder frontend/)  
+✅ Pełną dokumentację w README.md
+✅ GitHub Actions dla CI/CD
+✅ Instrukcje deployment
+
+Deployment opcje:
+- Frontend: Vercel (connect GitHub repo)
+- Backend: Railway lub Render (Python support)
+- Database: Railway PostgreSQL
