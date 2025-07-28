@@ -79,6 +79,14 @@ export const savingsGoals = pgTable("savings_goals", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const savingsTransactions = pgTable("savings_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  savingsGoalId: varchar("savings_goal_id").references(() => savingsGoals.id).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  date: date("date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertSavingsGoalSchema = createInsertSchema(savingsGoals).omit({
   id: true,
   createdAt: true,
@@ -95,3 +103,10 @@ export type Income = typeof incomes.$inferSelect;
 export type Expense = typeof expenses.$inferSelect;
 export type Investment = typeof investments.$inferSelect;
 export type SavingsGoal = typeof savingsGoals.$inferSelect;
+export type SavingsTransaction = typeof savingsTransactions.$inferSelect;
+export type InsertSavingsTransaction = typeof savingsTransactions.$inferInsert;
+
+export const insertSavingsTransactionSchema = createInsertSchema(savingsTransactions).omit({
+  id: true,
+  createdAt: true,
+});

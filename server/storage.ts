@@ -4,11 +4,13 @@ import {
   expenses,
   investments,
   savingsGoals,
+  savingsTransactions,
   type Category, 
   type Income, 
   type Expense, 
   type Investment,
   type SavingsGoal,
+  type SavingsTransaction,
   type InsertCategory,
   type InsertIncome,
   type InsertExpense,
@@ -56,6 +58,7 @@ export interface IStorage {
   updateSavingsGoal(id: string, goal: Partial<InsertSavingsGoal>): Promise<SavingsGoal | undefined>;
   deleteSavingsGoal(id: string): Promise<boolean>;
   addToSavingsGoal(id: string, amount: number): Promise<SavingsGoal | undefined>;
+  getSavingsTransactionsByMonth(year: number, month: number): Promise<SavingsTransaction[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -219,6 +222,14 @@ export class DatabaseStorage implements IStorage {
     const goal = await this.getSavingsGoalById(id);
     if (!goal) return undefined;
     
+    // Create savings transaction
+    const today = new Date().toISOString().split('T')[0];
+    await db.insert(savingsTransactions).values({
+      savingsGoalId: id,
+      amount: amount.toString(),
+      date: today,
+    });
+    
     const newCurrentAmount = parseFloat(goal.currentAmount) + amount;
     const [updatedGoal] = await db
       .update(savingsGoals)
@@ -226,6 +237,25 @@ export class DatabaseStorage implements IStorage {
       .where(eq(savingsGoals.id, id))
       .returning();
     return updatedGoal || undefined;
+  }
+
+  async getSavingsTransactionsByMonth(year: number, month: number): Promise<SavingsTransaction[]> {
+    try {
+      const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+      const endDate = new Date(year, month, 0).toISOString().split('T')[0]; // Last day of month
+      
+      return await db.select()
+        .from(savingsTransactions)
+        .where(
+          and(
+            gte(savingsTransactions.date, startDate),
+            lte(savingsTransactions.date, endDate)
+          )
+        );
+    } catch (error) {
+      console.error("Error getting savings transactions by month:", error);
+      return [];
+    }
   }
 }
 

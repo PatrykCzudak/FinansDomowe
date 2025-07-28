@@ -317,6 +317,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/savings-transactions/:year/:month", async (req, res) => {
+    try {
+      const { year, month } = req.params;
+      const transactions = await storage.getSavingsTransactionsByMonth(
+        parseInt(year),
+        parseInt(month)
+      );
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch savings transactions" });
+    }
+  });
+
   // Price service routes
   app.get("/api/prices/update", async (req, res) => {
     try {

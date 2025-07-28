@@ -6,7 +6,7 @@ import CategoryChart from "@/components/charts/category-chart";
 import TrendsChart from "@/components/charts/trends-chart";
 import { Progress } from "@/components/ui/progress";
 import { useMonthContext } from "@/contexts/month-context";
-import type { Category, Expense, Income } from "@shared/schema";
+import type { Category, Expense, Income, SavingsTransaction } from "@shared/schema";
 
 export default function SummaryPage() {
   const { data: categories = [] } = useQuery<Category[]>({ queryKey: ["/api/categories"] });
@@ -14,19 +14,24 @@ export default function SummaryPage() {
   const { data: incomes = [] } = useQuery<Income[]>({ queryKey: ["/api/incomes"] });
   const { selectedMonth } = useMonthContext();
 
+  const [year, month] = selectedMonth.split('-').map(Number);
+  const { data: savingsTransactions = [] } = useQuery<SavingsTransaction[]>({ 
+    queryKey: ["/api/savings-transactions", year, month] 
+  });
+
   const monthlyExpenses = expenses.filter(expense => expense.date.startsWith(selectedMonth));
   
   const totalMonthlyExpenses = monthlyExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
   const totalIncome = incomes.reduce((sum, income) => sum + parseFloat(income.amount), 0);
   const totalBudget = categories.reduce((sum, category) => sum + parseFloat(category.budget), 0);
   const remainingBudget = totalBudget - totalMonthlyExpenses;
-  const [year, month] = selectedMonth.split('-').map(Number);
   const daysInMonth = new Date(year, month, 0).getDate();
   const currentDay = selectedMonth === new Date().toISOString().slice(0, 7) 
     ? new Date().getDate() 
     : daysInMonth;
   const dailyAverage = totalMonthlyExpenses / currentDay;
   const savings = totalIncome - totalMonthlyExpenses;
+  const totalSavingsAdded = savingsTransactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0);
 
   const getCategoryExpenses = (categoryId: string) => {
     return monthlyExpenses
@@ -91,7 +96,11 @@ export default function SummaryPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Oszczędności</p>
                 <p className="text-2xl font-bold">{savings.toFixed(2)} zł</p>
-                <p className="text-sm text-green-600">W wybranym miesiącu</p>
+                {totalSavingsAdded > 0 ? (
+                  <p className="text-sm text-green-600">+{totalSavingsAdded.toFixed(2)} zł dodano</p>
+                ) : (
+                  <p className="text-sm text-green-600">W wybranym miesiącu</p>
+                )}
               </div>
               <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-full">
                 <PiggyBank className="text-purple-600 dark:text-purple-400 h-6 w-6" />
