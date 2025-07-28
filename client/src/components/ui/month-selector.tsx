@@ -31,7 +31,7 @@ export function MonthSelector({ value, onChange }: MonthSelectorProps) {
 
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-40 bg-green-600 text-white border-green-600 hover:bg-green-700">
+      <SelectTrigger className="w-40 bg-green-600 text-white border-green-600 hover:bg-green-700 dark:bg-green-700 dark:border-green-700 dark:hover:bg-green-800">
         <SelectValue>{selectedMonthLabel}</SelectValue>
       </SelectTrigger>
       <SelectContent>

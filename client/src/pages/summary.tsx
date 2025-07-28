@@ -44,12 +44,12 @@ export default function SummaryPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Wydatki w miesiącu</p>
-                <p className="text-2xl font-bold text-gray-900">{totalMonthlyExpenses.toFixed(2)} zł</p>
+                <p className="text-sm text-muted-foreground">Wydatki w miesiącu</p>
+                <p className="text-2xl font-bold">{totalMonthlyExpenses.toFixed(2)} zł</p>
                 <p className="text-sm text-green-600">{new Date(`${selectedMonth}-01`).toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' })}</p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <CreditCard className="text-blue-600 h-6 w-6" />
+              <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-full">
+                <CreditCard className="text-blue-600 dark:text-blue-400 h-6 w-6" />
               </div>
             </div>
           </CardContent>
@@ -59,12 +59,12 @@ export default function SummaryPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Pozostały budżet</p>
-                <p className="text-2xl font-bold text-gray-900">{remainingBudget.toFixed(2)} zł</p>
+                <p className="text-sm text-muted-foreground">Pozostały budżet</p>
+                <p className="text-2xl font-bold">{remainingBudget.toFixed(2)} zł</p>
                 <p className="text-sm text-green-600">{totalBudget > 0 ? ((remainingBudget / totalBudget) * 100).toFixed(1) : 0}% budżetu</p>
               </div>
-              <div className="bg-green-100 p-3 rounded-full">
-                <Wallet className="text-green-600 h-6 w-6" />
+              <div className="bg-green-100 dark:bg-green-900 p-3 rounded-full">
+                <Wallet className="text-green-600 dark:text-green-400 h-6 w-6" />
               </div>
             </div>
           </CardContent>
@@ -74,12 +74,12 @@ export default function SummaryPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Średni wydatek dzienny</p>
-                <p className="text-2xl font-bold text-gray-900">{dailyAverage.toFixed(2)} zł</p>
-                <p className="text-sm text-gray-600">W wybranym miesiącu</p>
+                <p className="text-sm text-muted-foreground">Średni wydatek dzienny</p>
+                <p className="text-2xl font-bold">{dailyAverage.toFixed(2)} zł</p>
+                <p className="text-sm text-muted-foreground">W wybranym miesiącu</p>
               </div>
-              <div className="bg-orange-100 p-3 rounded-full">
-                <Calendar className="text-orange-600 h-6 w-6" />
+              <div className="bg-orange-100 dark:bg-orange-900 p-3 rounded-full">
+                <Calendar className="text-orange-600 dark:text-orange-400 h-6 w-6" />
               </div>
             </div>
           </CardContent>
@@ -89,12 +89,12 @@ export default function SummaryPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Oszczędności</p>
-                <p className="text-2xl font-bold text-gray-900">{savings.toFixed(2)} zł</p>
+                <p className="text-sm text-muted-foreground">Oszczędności</p>
+                <p className="text-2xl font-bold">{savings.toFixed(2)} zł</p>
                 <p className="text-sm text-green-600">W wybranym miesiącu</p>
               </div>
-              <div className="bg-purple-100 p-3 rounded-full">
-                <PiggyBank className="text-purple-600 h-6 w-6" />
+              <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-full">
+                <PiggyBank className="text-purple-600 dark:text-purple-400 h-6 w-6" />
               </div>
             </div>
           </CardContent>
