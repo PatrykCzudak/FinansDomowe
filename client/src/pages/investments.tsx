@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Edit, Trash2, TrendingUp, DollarSign, Percent, PiggyBank, RefreshCw, Bot, Search, ShoppingCart } from "lucide-react";
+import { Plus, Edit, Trash2, TrendingUp, DollarSign, Percent, PiggyBank, RefreshCw, Bot, Search, ShoppingCart, AlertTriangle } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useBudget } from "@/hooks/use-budget";
 import InvestmentForm from "@/components/forms/investment-form";
@@ -11,6 +11,7 @@ import AllocationChart from "@/components/charts/allocation-chart";
 import PerformanceChart from "@/components/charts/performance-chart";
 import ProfitLossChart from "@/components/charts/profit-loss-chart";
 import AIAssistant from "@/components/ai/ai-assistant";
+import RiskAnalysis from "@/components/risk/risk-analysis";
 import PriceUpdater from "@/components/investment/price-updater";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -213,7 +214,7 @@ export default function InvestmentsPage() {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="portfolio" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="portfolio" className="flex items-center">
             <TrendingUp className="mr-2 h-4 w-4" />
             Portfolio
@@ -221,6 +222,10 @@ export default function InvestmentsPage() {
           <TabsTrigger value="ai-assistant" className="flex items-center">
             <Bot className="mr-2 h-4 w-4" />
             AI Asystent
+          </TabsTrigger>
+          <TabsTrigger value="risk-analysis" className="flex items-center">
+            <AlertTriangle className="mr-2 h-4 w-4" />
+            Ryzyko
           </TabsTrigger>
           <TabsTrigger value="market-data" className="flex items-center">
             <Search className="mr-2 h-4 w-4" />
@@ -472,6 +477,10 @@ export default function InvestmentsPage() {
 
         <TabsContent value="ai-assistant">
           <AIAssistant />
+        </TabsContent>
+
+        <TabsContent value="risk-analysis">
+          <RiskAnalysis />
         </TabsContent>
 
         <TabsContent value="market-data">

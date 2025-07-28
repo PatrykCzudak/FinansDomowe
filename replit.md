@@ -133,3 +133,18 @@ The application follows a monorepo structure with shared TypeScript types betwee
 - **Search Functionality**: Real-time expense search by description, category, or amount on expenses page
 - **Database Integration**: All savings data persisted to PostgreSQL with proper schema validation
 - **UX Improvements**: Responsive design, color-coded categories, and intuitive goal management interface
+
+### 2025-01-28: Advanced Investment Risk Analysis & Enhanced AI Assistant
+- **Risk Analysis Module**: Comprehensive risk analysis module with classical statistical methods
+  - New "Ryzyko" tab in investment section with 4 sub-modules: VaR, Expected Shortfall, Risk Metrics, Stress Testing
+  - Value at Risk (VaR) calculations with customizable confidence levels and time horizons
+  - Expected Shortfall (ES) analysis for tail risk assessment
+  - Additional risk metrics: Beta, Sharpe Ratio, Maximum Drawdown, Volatility
+  - Stress testing with historical crisis scenarios (2008 crash, COVID-19, market corrections)
+- **Enhanced AI Assistant**: Multi-tab AI assistant with advanced capabilities
+  - **Classic Analysis**: Portfolio, budget, and recommendation analysis
+  - **AI Models**: LSTM Neural Networks, Bayesian LSTM, CNN+Transformer, CatBoost ML models
+  - **Forecasting**: Asset price prediction with multiple time horizons
+  - **Optimization**: Markowitz portfolio optimization and AI-enhanced optimization with machine learning
+- **UI Improvements**: Added AlertTriangle icon, improved tab navigation, color-coded risk metrics
+- **Modular Architecture**: Separated risk analysis into dedicated component for scalability
