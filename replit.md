@@ -121,3 +121,15 @@ The application follows a monorepo structure with shared TypeScript types betwee
 - **Expense Form Integration**: New expenses default to the selected month, supporting browsing of historical data
 - **Dark/Light Mode Toggle**: Added `ThemeProvider` and `ThemeToggle` component with CSS variables for consistent theming
 - **UI Improvements**: Updated all components to support dark mode with proper contrast and styling
+
+### 2025-01-28: Savings Goals & Enhanced UX Features
+- **Savings Goals Module**: Complete savings tracking system with PostgreSQL database integration
+  - New `savingsGoals` table with target amounts, current progress, dates, categories, and colors
+  - API endpoints for CRUD operations and adding savings amounts
+  - Progress tracking with percentage completion and monthly savings calculators
+  - Visual goal cards with progress bars and deadline tracking
+- **Enhanced Navigation**: Savings Goals positioned as 3rd tab in main navigation
+- **Floating Expense Button**: Quick-add button for expenses accessible from any page with category selection
+- **Search Functionality**: Real-time expense search by description, category, or amount on expenses page
+- **Database Integration**: All savings data persisted to PostgreSQL with proper schema validation
+- **UX Improvements**: Responsive design, color-coded categories, and intuitive goal management interface

@@ -74,7 +74,7 @@ export default function SavingsPage() {
         category: data.category,
         color: data.color,
       };
-      return apiRequest("/api/savings-goals", "POST", processedData);
+      return apiRequest("POST", "/api/savings-goals", processedData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/savings-goals"] });
@@ -88,7 +88,7 @@ export default function SavingsPage() {
 
   const addSavingsMutation = useMutation({
     mutationFn: ({ id, amount }: { id: string; amount: number }) =>
-      apiRequest(`/api/savings-goals/${id}/add-savings`, "POST", { amount }),
+      apiRequest("POST", `/api/savings-goals/${id}/add-savings`, { amount }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/savings-goals"] });
       setShowAddSavingsDialog(false);
@@ -98,7 +98,7 @@ export default function SavingsPage() {
   });
 
   const deleteGoalMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/savings-goals/${id}`, "DELETE"),
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/savings-goals/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/savings-goals"] });
     },
