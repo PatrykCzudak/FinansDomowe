@@ -5,20 +5,23 @@ import {
   investments,
   savingsGoals,
   savingsTransactions,
+  investmentSales,
   type Category, 
   type Income, 
   type Expense, 
   type Investment,
   type SavingsGoal,
   type SavingsTransaction,
+  type InvestmentSale,
   type InsertCategory,
   type InsertIncome,
   type InsertExpense,
   type InsertInvestment,
-  type InsertSavingsGoal
+  type InsertSavingsGoal,
+  type InsertInvestmentSale
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lte } from "drizzle-orm";
+import { eq, and, gte, lte, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Categories
@@ -50,6 +53,9 @@ export interface IStorage {
   createInvestment(investment: InsertInvestment): Promise<Investment>;
   updateInvestment(id: string, investment: Partial<InsertInvestment>): Promise<Investment | undefined>;
   deleteInvestment(id: string): Promise<boolean>;
+  sellInvestment(id: string, quantitySold: number, salePrice: number): Promise<InvestmentSale | undefined>;
+  getInvestmentSales(): Promise<InvestmentSale[]>;
+  getTotalProfitLoss(): Promise<number>;
 
   // Savings Goals
   getSavingsGoals(): Promise<SavingsGoal[]>;
@@ -255,6 +261,62 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error getting savings transactions by month:", error);
       return [];
+    }
+  }
+
+  async sellInvestment(id: string, quantitySold: number, salePrice: number): Promise<InvestmentSale | undefined> {
+    try {
+      // Get investment details
+      const investment = await this.getInvestmentById(id);
+      if (!investment) return undefined;
+
+      const purchasePrice = parseFloat(investment.purchasePrice);
+      const totalSaleValue = quantitySold * salePrice;
+      const totalPurchaseValue = quantitySold * purchasePrice;
+      const profitLoss = totalSaleValue - totalPurchaseValue;
+
+      // Create sale record
+      const today = new Date().toISOString().split('T')[0];
+      const [sale] = await db.insert(investmentSales).values({
+        investmentId: id,
+        quantitySold: quantitySold.toString(),
+        salePrice: salePrice.toString(),
+        totalSaleValue: totalSaleValue.toString(),
+        profitLoss: profitLoss.toString(),
+        saleDate: today,
+      }).returning();
+
+      // Update investment quantity
+      const newQuantity = parseFloat(investment.quantity) - quantitySold;
+      if (newQuantity <= 0) {
+        // Delete investment if fully sold
+        await this.deleteInvestment(id);
+      } else {
+        // Update remaining quantity
+        await db
+          .update(investments)
+          .set({ quantity: newQuantity.toString() })
+          .where(eq(investments.id, id));
+      }
+
+      return sale;
+    } catch (error) {
+      console.error("Error selling investment:", error);
+      return undefined;
+    }
+  }
+
+  async getInvestmentSales(): Promise<InvestmentSale[]> {
+    return await db.select().from(investmentSales).orderBy(desc(investmentSales.saleDate));
+  }
+
+  async getTotalProfitLoss(): Promise<number> {
+    try {
+      const sales = await this.getInvestmentSales();
+      return sales.reduce((total, sale) => total + parseFloat(sale.profitLoss), 0);
+    } catch (error) {
+      console.error("Error calculating total profit/loss:", error);
+      return 0;
     }
   }
 }

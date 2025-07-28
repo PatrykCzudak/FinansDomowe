@@ -245,6 +245,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/investments/:id/sell", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { quantitySold, salePrice } = req.body;
+
+      if (!quantitySold || !salePrice || quantitySold <= 0 || salePrice <= 0) {
+        res.status(400).json({ message: "Invalid quantity or sale price" });
+        return;
+      }
+
+      const sale = await storage.sellInvestment(id, parseFloat(quantitySold), parseFloat(salePrice));
+      if (!sale) {
+        res.status(404).json({ message: "Investment not found" });
+        return;
+      }
+
+      res.status(201).json(sale);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to sell investment" });
+    }
+  });
+
+  app.get("/api/investment-sales", async (req, res) => {
+    try {
+      const sales = await storage.getInvestmentSales();
+      res.json(sales);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch investment sales" });
+    }
+  });
+
+  app.get("/api/portfolio/profit-loss", async (req, res) => {
+    try {
+      const totalProfitLoss = await storage.getTotalProfitLoss();
+      res.json({ totalProfitLoss });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate profit/loss" });
+    }
+  });
+
   // Savings Goals routes
   app.get("/api/savings-goals", async (req, res) => {
     try {

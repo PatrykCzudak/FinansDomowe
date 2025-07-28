@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Edit, Trash2, TrendingUp, DollarSign, Percent, PiggyBank, RefreshCw, Bot, Search } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Plus, Edit, Trash2, TrendingUp, DollarSign, Percent, PiggyBank, RefreshCw, Bot, Search, ShoppingCart } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useBudget } from "@/hooks/use-budget";
 import InvestmentForm from "@/components/forms/investment-form";
 import AllocationChart from "@/components/charts/allocation-chart";
@@ -13,18 +13,44 @@ import AIAssistant from "@/components/ai/ai-assistant";
 import PriceUpdater from "@/components/investment/price-updater";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import type { Investment } from "@shared/schema";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { apiRequest } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import type { Investment, InvestmentSale } from "@shared/schema";
 
 export default function InvestmentsPage() {
   const [showInvestmentForm, setShowInvestmentForm] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
   const [filterType, setFilterType] = useState("all");
+  const [showSellDialog, setShowSellDialog] = useState(false);
+  const [sellingInvestment, setSellingInvestment] = useState<Investment | null>(null);
+  const [sellQuantity, setSellQuantity] = useState("");
+  const [sellPrice, setSellPrice] = useState("");
 
   const { data: investments = [], isLoading } = useQuery<Investment[]>({
     queryKey: ['/api/investments']
   });
 
+  const { data: profitLossData } = useQuery({
+    queryKey: ['/api/portfolio/profit-loss']
+  });
+
   const { deleteInvestment } = useBudget();
+
+  const sellInvestmentMutation = useMutation({
+    mutationFn: ({ id, quantitySold, salePrice }: { id: string; quantitySold: number; salePrice: number }) =>
+      apiRequest("POST", `/api/investments/${id}/sell`, { quantitySold, salePrice }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio/profit-loss"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/investment-sales"] });
+      setShowSellDialog(false);
+      setSellingInvestment(null);
+      setSellQuantity("");
+      setSellPrice("");
+    }
+  });
 
   const filteredInvestments = investments.filter(investment => 
     filterType === "all" || investment.type === filterType
@@ -39,8 +65,10 @@ export default function InvestmentsPage() {
     return sum + (currentPrice * parseFloat(inv.quantity));
   }, 0);
 
-  const totalProfitLoss = totalCurrentValue - totalInvested;
-  const totalROI = totalInvested > 0 ? (totalProfitLoss / totalInvested) * 100 : 0;
+  const unrealizedProfitLoss = totalCurrentValue - totalInvested;
+  const totalROI = totalInvested > 0 ? (unrealizedProfitLoss / totalInvested) * 100 : 0;
+  const realizedProfitLoss = profitLossData?.totalProfitLoss || 0;
+  const totalProfitLoss = unrealizedProfitLoss + realizedProfitLoss;
 
   const calculateProfitLoss = (investment: Investment) => {
     const purchaseValue = parseFloat(investment.purchasePrice) * parseFloat(investment.quantity);
@@ -65,6 +93,30 @@ export default function InvestmentsPage() {
   const handleInvestmentFormClose = () => {
     setShowInvestmentForm(false);
     setEditingInvestment(null);
+  };
+
+  const handleSellInvestment = (investment: Investment) => {
+    setSellingInvestment(investment);
+    setSellPrice(investment.currentPrice || investment.purchasePrice);
+    setShowSellDialog(true);
+  };
+
+  const handleSellSubmit = () => {
+    if (!sellingInvestment || !sellQuantity || !sellPrice) return;
+    
+    const quantity = parseFloat(sellQuantity);
+    const price = parseFloat(sellPrice);
+    
+    if (quantity <= 0 || price <= 0 || quantity > parseFloat(sellingInvestment.quantity)) {
+      alert("Nieprawidłowa ilość lub cena");
+      return;
+    }
+
+    sellInvestmentMutation.mutate({
+      id: sellingInvestment.id,
+      quantitySold: quantity,
+      salePrice: price
+    });
   };
 
   const getTypeBadgeColor = (type: string) => {
@@ -139,12 +191,14 @@ export default function InvestmentsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Potencjalne dywidendy</p>
-                <p className="text-2xl font-bold text-gray-900">0.00 zł</p>
-                <p className="text-sm text-gray-600">szacunkowe roczne</p>
+                <p className="text-sm text-gray-500">Zrealizowane zyski/straty</p>
+                <p className={`text-2xl font-bold ${realizedProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {realizedProfitLoss >= 0 ? '+' : ''}{realizedProfitLoss.toFixed(2)} zł
+                </p>
+                <p className="text-sm text-gray-600">ze sprzedanych pozycji</p>
               </div>
-              <div className="bg-purple-100 p-3 rounded-full">
-                <PiggyBank className="text-purple-600 h-6 w-6" />
+              <div className="bg-orange-100 p-3 rounded-full">
+                <ShoppingCart className="text-orange-600 h-6 w-6" />
               </div>
             </div>
           </CardContent>
@@ -289,6 +343,15 @@ export default function InvestmentsPage() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  onClick={() => handleSellInvestment(investment)}
+                                  className="text-green-600 hover:text-green-800"
+                                  title="Sprzedaj"
+                                >
+                                  <ShoppingCart className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={() => handleEditInvestment(investment)}
                                 >
                                   <Edit className="h-4 w-4" />
@@ -333,6 +396,76 @@ export default function InvestmentsPage() {
           <PriceUpdater />
         </TabsContent>
       </Tabs>
+
+      {/* Sell Investment Dialog */}
+      <Dialog open={showSellDialog} onOpenChange={setShowSellDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sprzedaj inwestycję</DialogTitle>
+          </DialogHeader>
+          {sellingInvestment && (
+            <div className="space-y-4">
+              <div>
+                <p className="font-medium">{sellingInvestment.symbol} - {sellingInvestment.name}</p>
+                <p className="text-sm text-gray-600">Posiadane: {sellingInvestment.quantity} jednostek</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="sell-quantity">Ilość do sprzedaży</Label>
+                <Input
+                  id="sell-quantity"
+                  type="number"
+                  step="0.0001"
+                  max={sellingInvestment.quantity}
+                  value={sellQuantity}
+                  onChange={(e) => setSellQuantity(e.target.value)}
+                  placeholder="Wprowadź ilość"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="sell-price">Cena sprzedaży za jednostkę</Label>
+                <Input
+                  id="sell-price"
+                  type="number"
+                  step="0.01"
+                  value={sellPrice}
+                  onChange={(e) => setSellPrice(e.target.value)}
+                  placeholder="Wprowadź cenę"
+                />
+              </div>
+              
+              {sellQuantity && sellPrice && (
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Podgląd transakcji:</p>
+                  <p className="font-medium">
+                    Wartość sprzedaży: {(parseFloat(sellQuantity) * parseFloat(sellPrice)).toFixed(2)} zł
+                  </p>
+                  <p className="font-medium">
+                    Zysk/Strata: {
+                      (parseFloat(sellQuantity) * parseFloat(sellPrice) - 
+                       parseFloat(sellQuantity) * parseFloat(sellingInvestment.purchasePrice)).toFixed(2)
+                    } zł
+                  </p>
+                </div>
+              )}
+              
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowSellDialog(false)}>
+                  Anuluj
+                </Button>
+                <Button 
+                  onClick={handleSellSubmit}
+                  disabled={sellInvestmentMutation.isPending || !sellQuantity || !sellPrice}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {sellInvestmentMutation.isPending ? "Sprzedawanie..." : "Sprzedaj"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
