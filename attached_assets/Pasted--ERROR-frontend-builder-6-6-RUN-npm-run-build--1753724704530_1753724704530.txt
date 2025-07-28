@@ -1,0 +1,82 @@
+ => ERROR [frontend builder 6/6] RUN npm run build                                                                 4.3s
+------
+ > [frontend builder 6/6] RUN npm run build:
+0.296
+0.296 > budget-frontend@1.0.0 build
+0.296 > tsc && vite build
+0.296
+4.266 src/components/charts/allocation-chart.tsx(3,33): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.266 src/components/charts/allocation-chart.tsx(50,22): error TS6133: 'entry' is declared but its value is never read.
+4.266 src/components/charts/budget-chart.tsx(3,40): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.266 src/components/charts/category-chart.tsx(3,40): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.266 src/components/charts/performance-chart.tsx(3,33): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.266 src/components/charts/profit-loss-chart.tsx(2,37): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.266 src/components/charts/trends-chart.tsx(3,30): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.266 src/components/charts/var-chart.tsx(2,1): error TS6133: 'createPLHistogram' is declared but its value is never read.
+4.266 src/components/floating-expense-button.tsx(7,31): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.266 src/components/forms/category-form.tsx(7,53): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.266 src/components/forms/expense-form.tsx(9,66): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.266 src/components/forms/income-form.tsx(8,49): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.266 src/components/forms/investment-form.tsx(9,57): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.266 src/components/investment/candlestick-chart.tsx(1,20): error TS6133: 'useEffect' is declared but its value is never read.
+4.266 src/components/investment/candlestick-chart.tsx(9,31): error TS6133: 'ComposedChart' is declared but its value is never read.
+4.266 src/components/investment/price-updater.tsx(4,1): error TS6133: 'Input' is declared but its value is never read.
+4.267 src/components/investment/price-updater.tsx(5,1): error TS6133: 'Badge' is declared but its value is never read.
+4.267 src/components/investment/price-updater.tsx(6,21): error TS6133: 'Search' is declared but its value is never read.
+4.267 src/components/investment/price-updater.tsx(8,23): error TS6133: 'useQuery' is declared but its value is never read.
+4.267 src/components/investment/price-updater.tsx(26,23): error TS6133: 'setSearchQuery' is declared but its value is never read.
+4.267 src/components/investment/price-updater.tsx(27,10): error TS6133: 'searchResults' is declared but its value is never read.
+4.267 src/components/investment/price-updater.tsx(90,9): error TS6133: 'handleSearch' is declared but its value is never read.
+4.267 src/components/investment/price-updater.tsx(96,9): error TS6133: 'handleGetPrice' is declared but its value is never read.
+4.267 src/components/investment/price-updater.tsx(100,9): error TS6133: 'getExchangeBadgeColor' is declared but its value is never read.
+4.267 src/components/investment/price-updater.tsx(113,9): error TS6133: 'getTypeIcon' is declared but its value is never read.
+4.267 src/components/risk/risk-analysis.tsx(7,37): error TS6133: 'TrendingDown' is declared but its value is never read.
+4.267 src/components/risk/risk-analysis.tsx(21,33): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.267 src/components/risk/risk-analysis.tsx(83,13): error TS6133: 'confidenceLevel' is declared but its value is never read.
+4.267 src/components/search-expenses.tsx(5,1): error TS6192: All imports in import declaration are unused.
+4.267 src/components/search-expenses.tsx(9,40): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.267 src/components/ui/alert-dialog.tsx(2,39): error TS2307: Cannot find module '@radix-ui/react-alert-dialog' or its corresponding type declarations.
+4.267 src/components/ui/aspect-ratio.tsx(1,39): error TS2307: Cannot find module '@radix-ui/react-aspect-ratio' or its corresponding type declarations.
+4.267 src/components/ui/calendar.tsx(3,27): error TS2307: Cannot find module 'react-day-picker' or its corresponding type declarations.
+4.267 src/components/ui/calendar.tsx(55,22): error TS7031: Binding element 'className' implicitly has an 'any' type.
+4.267 src/components/ui/calendar.tsx(58,23): error TS7031: Binding element 'className' implicitly has an 'any' type.
+4.267 src/components/ui/carousel.tsx(4,8): error TS2307: Cannot find module 'embla-carousel-react' or its corresponding type declarations.
+4.267 src/components/ui/checkbox.tsx(2,36): error TS2307: Cannot find module '@radix-ui/react-checkbox' or its corresponding type declarations.
+4.267 src/components/ui/context-menu.tsx(2,39): error TS2307: Cannot find module '@radix-ui/react-context-menu' or its corresponding type declarations.
+4.267 src/components/ui/drawer.tsx(4,43): error TS2307: Cannot find module 'vaul' or its corresponding type declarations.
+4.267 src/components/ui/hover-card.tsx(4,37): error TS2307: Cannot find module '@radix-ui/react-hover-card' or its corresponding type declarations.
+4.267 src/components/ui/input-otp.tsx(2,43): error TS2307: Cannot find module 'input-otp' or its corresponding type declarations.
+4.267 src/components/ui/input-otp.tsx(36,44): error TS18046: 'inputOTPContext' is of type 'unknown'.
+4.267 src/components/ui/menubar.tsx(4,35): error TS2307: Cannot find module '@radix-ui/react-menubar' or its corresponding type declarations.
+4.267 src/components/ui/navigation-menu.tsx(2,42): error TS2307: Cannot find module '@radix-ui/react-navigation-menu' or its corresponding type declarations.
+4.267 src/components/ui/radio-group.tsx(2,38): error TS2307: Cannot find module '@radix-ui/react-radio-group' or its corresponding type declarations.
+4.267 src/components/ui/resizable.tsx(4,37): error TS2307: Cannot find module 'react-resizable-panels' or its corresponding type declarations.
+4.267 src/components/ui/scroll-area.tsx(2,38): error TS2307: Cannot find module '@radix-ui/react-scroll-area' or its corresponding type declarations.
+4.267 src/components/ui/slider.tsx(2,34): error TS2307: Cannot find module '@radix-ui/react-slider' or its corresponding type declarations.
+4.267 src/components/ui/switch.tsx(2,35): error TS2307: Cannot find module '@radix-ui/react-switch' or its corresponding type declarations.
+4.267 src/components/ui/toggle-group.tsx(4,39): error TS2307: Cannot find module '@radix-ui/react-toggle-group' or its corresponding type declarations.
+4.267 src/components/ui/toggle.tsx(2,34): error TS2307: Cannot find module '@radix-ui/react-toggle' or its corresponding type declarations.
+4.267 src/components/ui/tooltip.tsx(4,35): error TS2307: Cannot find module '@radix-ui/react-tooltip' or its corresponding type declarations.
+4.267 src/hooks/use-budget.ts(4,84): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.267 src/pages/admin.tsx(3,30): error TS6133: 'Wallet' is declared but its value is never read.
+4.267 src/pages/admin.tsx(3,38): error TS6133: 'TrendingUp' is declared but its value is never read.
+4.267 src/pages/admin.tsx(3,50): error TS6133: 'TrendingDown' is declared but its value is never read.
+4.267 src/pages/admin.tsx(3,64): error TS6133: 'PiggyBank' is declared but its value is never read.
+4.267 src/pages/admin.tsx(12,39): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.267 src/pages/admin.tsx(28,9): error TS6133: 'remainingBudget' is declared but its value is never read.
+4.267 src/pages/expenses.tsx(3,1): error TS6133: 'Input' is declared but its value is never read.
+4.267 src/pages/expenses.tsx(14,40): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.267 src/pages/investments.tsx(6,63): error TS6133: 'PiggyBank' is declared but its value is never read.
+4.267 src/pages/investments.tsx(6,74): error TS6133: 'RefreshCw' is declared but its value is never read.
+4.267 src/pages/investments.tsx(11,1): error TS6133: 'PerformanceChart' is declared but its value is never read.
+4.267 src/pages/investments.tsx(22,49): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.267 src/pages/savings.tsx(4,23): error TS6133: 'InsertSavingsGoal' is declared but its value is never read.
+4.267 src/pages/savings.tsx(4,48): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.267 src/pages/savings.tsx(16,1): error TS6133: 'insertSavingsGoalSchema' is declared but its value is never read.
+4.267 src/pages/savings.tsx(16,41): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.267 src/pages/summary.tsx(10,68): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.267 src/pages/summary.tsx(47,9): error TS6133: 'getCategoryById' is declared but its value is never read.
+4.267 src/utils/income-filter.ts(1,29): error TS2307: Cannot find module '@shared/schema' or its corresponding type declarations.
+4.267 src/utils/risk-calculations.ts(176,62): error TS6133: 'returns' is declared but its value is never read.
+------
+failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 2
