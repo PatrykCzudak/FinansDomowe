@@ -179,37 +179,7 @@ export default function AdminPage() {
           <CardTitle>Konfiguracja budżetu</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-blue-600 font-medium">Całkowity przychód</p>
-                  <p className="text-2xl font-bold text-blue-700">{totalIncome.toFixed(2)} zł</p>
-                </div>
-                <TrendingUp className="text-blue-500 h-8 w-8" />
-              </div>
-            </div>
-            
-            <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-orange-600 font-medium">Planowane wydatki</p>
-                  <p className="text-2xl font-bold text-orange-700">{totalBudget.toFixed(2)} zł</p>
-                </div>
-                <TrendingDown className="text-orange-500 h-8 w-8" />
-              </div>
-            </div>
-            
-            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-green-600 font-medium">Pozostało do oszczędności</p>
-                  <p className="text-2xl font-bold text-green-700">{remainingBudget.toFixed(2)} zł</p>
-                </div>
-                <PiggyBank className="text-green-500 h-8 w-8" />
-              </div>
-            </div>
-          </div>
+          
         </CardContent>
       </Card>
     </div>

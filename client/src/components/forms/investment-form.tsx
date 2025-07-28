@@ -30,7 +30,7 @@ export default function InvestmentForm({ investment, onSuccess, onCancel }: Inve
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedTicker, setSelectedTicker] = useState(investment?.symbol || "");
-  
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -76,15 +76,62 @@ export default function InvestmentForm({ investment, onSuccess, onCancel }: Inve
     form.setValue("symbol", result.symbol);
     form.setValue("name", result.shortname || result.longname || result.symbol);
     
-    // Automatycznie ustal typ na podstawie typeDisp
-    const type = result.typeDisp?.toLowerCase().includes('etf') ? 'etf' : 'akcje';
-    form.setValue("type", type);
-    
     // Pobierz aktualną cenę
     getPriceMutation.mutate(result.symbol);
     
     setSearchResults([]);
     setSearchQuery("");
+  };
+
+  const handleTypeChange = (type: string) => {
+    form.setValue("type", type);
+    // Reset selected ticker when type changes
+    setSelectedTicker("");
+    form.setValue("symbol", "");
+    form.setValue("name", "");
+    form.setValue("purchasePrice", "");
+    setSearchResults([]);
+  };
+
+  // Filter search results based on selected type
+  const getFilteredResults = () => {
+    const selectedType = form.watch("type");
+    if (!selectedType || !searchResults.length) return searchResults;
+
+    return searchResults.filter(result => {
+      const typeDisp = result.typeDisp?.toLowerCase() || "";
+      
+      switch (selectedType) {
+        case 'akcje':
+          return typeDisp.includes('equity') || typeDisp.includes('stock') || 
+                 (!typeDisp.includes('etf') && !typeDisp.includes('fund') && !typeDisp.includes('bond'));
+        case 'etf':
+          return typeDisp.includes('etf') || typeDisp.includes('fund');
+        case 'obligacje':
+          return typeDisp.includes('bond');
+        case 'kryptowaluty':
+          return typeDisp.includes('crypto') || typeDisp.includes('coin');
+        default:
+          return true;
+      }
+    });
+  };
+
+  const getPlaceholderForType = (type: string) => {
+    switch (type) {
+      case 'akcje':
+        return 'AAPL, MSFT, GOOGL';
+      case 'etf':
+        return 'SPY, VTI, QQQ';
+      case 'obligacje':
+        return 'TLT, IEF, BND';
+      case 'kryptowaluty':
+        return 'BTC-USD, ETH-USD';
+      case 'nieruchomości':
+        return 'REITs: VNQ, IYR';
+      default:
+        return 'ticker';
+    }
   };
 
   const onSubmit = async (data: FormData) => {
@@ -109,7 +156,7 @@ export default function InvestmentForm({ investment, onSuccess, onCancel }: Inve
           render={({ field }) => (
             <FormItem>
               <FormLabel>Typ instrumentu</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={handleTypeChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Wybierz typ" />
@@ -128,6 +175,67 @@ export default function InvestmentForm({ investment, onSuccess, onCancel }: Inve
           )}
         />
 
+        {/* Ticker Search - Only show if type is selected */}
+        {form.watch("type") && (
+          <div className="space-y-3">
+            <FormLabel>Wyszukaj ticker ({form.watch("type")})</FormLabel>
+            <div className="flex space-x-2">
+              <Input
+                placeholder={`Wpisz symbol dla ${form.watch("type")} (np. ${getPlaceholderForType(form.watch("type"))})`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                onClick={handleSearch}
+                disabled={searchMutation.isPending || !searchQuery.trim()}
+                variant="outline"
+              >
+                {searchMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            {/* Search Results */}
+            {getFilteredResults().length > 0 && (
+              <div className="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-2">
+                <p className="text-sm text-gray-600 mb-2">Znalezione tickery dla {form.watch("type")}:</p>
+                {getFilteredResults().map((result, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-2 hover:bg-gray-50 rounded cursor-pointer"
+                    onClick={() => handleTickerSelect(result)}
+                  >
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium">{result.symbol}</span>
+                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">{result.exchange}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Selected Ticker */}
+            {selectedTicker && (
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-blue-900">Ticker: {selectedTicker}</span>
+                  {getPriceMutation.isPending && (
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <FormField
           control={form.control}
           name="symbol"
@@ -135,21 +243,7 @@ export default function InvestmentForm({ investment, onSuccess, onCancel }: Inve
             <FormItem>
               <FormLabel>Symbol/Ticker</FormLabel>
               <FormControl>
-                <Input placeholder="np. AAPL, BTC, itp." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Pełna nazwa</FormLabel>
-              <FormControl>
-                <Input placeholder="np. Apple Inc." {...field} />
+                <Input placeholder="Wybierz z listy powyżej" {...field} disabled />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -175,9 +269,9 @@ export default function InvestmentForm({ investment, onSuccess, onCancel }: Inve
           name="purchasePrice"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Cena zakupu (zł)</FormLabel>
+              <FormLabel>Cena zakupu (USD)</FormLabel>
               <FormControl>
-                <Input type="number" step="0.01" placeholder="0.00" {...field} />
+                <Input type="number" step="0.01" placeholder="Cena zostanie pobrana automatycznie" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -206,7 +300,7 @@ export default function InvestmentForm({ investment, onSuccess, onCancel }: Inve
             type="submit" 
             disabled={createInvestment.isPending || updateInvestment.isPending}
           >
-            {investment ? "Zapisz zmiany" : "Dodaj inwestycję"}
+            {investment ? "Zaktualizuj" : "Dodaj"}
           </Button>
         </div>
       </form>
