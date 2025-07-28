@@ -12,7 +12,7 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const apiBase = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8000';
+  const apiBase = 'http://localhost:8000';
   const fullUrl = url.startsWith('/api') ? `${apiBase}${url}` : url;
   const res = await fetch(fullUrl, {
     method,
@@ -31,7 +31,7 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const apiBase = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8000';
+    const apiBase = 'http://localhost:8000';
     const url = queryKey.join("/").replace(/^\/api/, `${apiBase}/api`);
     const res = await fetch(url, {
       credentials: "include",

@@ -1,251 +1,169 @@
-# Personal Budget Management Application (Python FastAPI + React)
+# 🐍 Aplikacja Budżetowa Python FastAPI
 
-Zaawansowana aplikacja do zarządzania budżetem osobistym z wykorzystaniem FastAPI (Python) jako backend i React z TypeScript jako frontend. Aplikacja oferuje kompleksowe śledzenie finansów, analizę portfela inwestycyjnego, analizę ryzyka VaR i asystenta AI.
+## ✨ Kompletna implementacja 
 
-## 🚀 Funkcje
+Aplikacja zarządzania budżetem osobistym przepisana z Node.js/Express na **Python FastAPI** z modułową architekturą i całkowicie nowym backendem.
 
-### 💰 Zarządzanie Budżetem
-- **Kategorie wydatków** z kolorami i limitami budżetowymi
-- **Śledzenie dochodów** z różnymi częstotliwościami
-- **Rejestrowanie wydatków** z przypisaniem do kategorii
-- **Filtrowanie po miesiącach** - przeglądanie historycznych danych
+## 🏗️ Architektura Backend
 
-### 📈 Portfolio Inwestycyjne
-- **Zarządzanie inwestycjami** (akcje, ETF, obligacje)
-- **Automatyczne aktualizacje cen** z Yahoo Finance co 15 minut
-- **Obliczenia zysków/strat** w czasie rzeczywistym
-- **Wykresy alokacji aktywów** i wyników portfela
-- **Wyszukiwanie instrumentów** finansowych
+### Struktura modułowa Python FastAPI
 
-### 🎯 Cele Oszczędnościowe
-- **Tworzenie celów oszczędnościowych** z datami docelowymi
-- **Śledzenie postępów** z paskami postępu
-- **Kalkulatory miesięcznych oszczędności**
-- **Kolorowe kategorie** dla lepszej organizacji
+```
+backend/
+├── main.py              # Główny punkt wejścia aplikacji
+├── database.py          # Konfiguracja PostgreSQL i sesje
+├── models.py            # Modele SQLAlchemy z właściwymi typami
+├── schemas.py           # Walidacja Pydantic dla API
+├── requirements.txt     # Zależności Python
+├── routers/            # Rozdzielone endpointy API
+│   ├── categories.py   # CRUD kategorii budżetowych  
+│   ├── incomes.py      # Zarządzanie przychodami
+│   ├── expenses.py     # Wydatki z filtrowaniem
+│   ├── investments.py  # Portfel inwestycyjny
+│   ├── savings.py      # Cele oszczędnościowe
+│   ├── ai.py          # Asystent AI i analiza ryzyka
+│   └── prices.py      # Yahoo Finance integracja
+└── services/          # Logika biznesowa
+    ├── price_service.py # Automatyczne aktualizacje cen
+    └── ai_service.py    # Analiza AI i VaR calculations
+```
 
-### ⚠️ Analiza Ryzyka
-- **Value at Risk (VaR)** na poziomach ufności 95% i 99%
-- **Expected Shortfall (ES)** dla analizy ryzyka ogona
-- **Metryki ryzyka**: Beta, Sharpe Ratio, Maximum Drawdown
-- **Testy stresowe** na podstawie kryzysów historycznych
+## 🚀 Uruchomienie aplikacji
 
-### 🤖 Asystent AI
-- **Analiza portfela** z rekomendacjami dywersyfikacji
-- **Analiza budżetu** z wykrywaniem anomalii wydatków
-- **Prognozowanie** cen aktywów z modelami ML
-- **Optymalizacja portfela** Markowitz i AI-enhanced
-
-## 🛠️ Stack Technologiczny
-
-### Backend (Python FastAPI)
-- **FastAPI** - nowoczesny framework webowy
-- **SQLAlchemy** - ORM do zarządzania bazą danych
-- **PostgreSQL** - relacyjna baza danych
-- **yfinance** - dane rynkowe z Yahoo Finance
-- **pandas/numpy** - analiza danych finansowych
-- **uvicorn** - serwer ASGI
-- **APScheduler** - harmonogram zadań
-
-### Frontend (React + TypeScript)
-- **React 18** z TypeScript
-- **Vite** - narzędzie budowania i dev server
-- **Tailwind CSS** - utility-first CSS framework
-- **shadcn/ui** - biblioteka komponentów UI
-- **TanStack Query** - zarządzanie stanem serwera
-- **Recharts** - wykresy i wizualizacje
-- **React Hook Form** - obsługa formularzy
-
-### Infrastructure
-- **Docker & Docker Compose** - konteneryzacja
-- **Nginx** - reverse proxy dla frontendu
-- **PostgreSQL** - baza danych w kontenerze
-
-## 🚀 Szybki Start
-
-### Wymagania
-- Docker i Docker Compose
-- Port 3000 (frontend), 8000 (backend), 5432 (PostgreSQL)
-
-### Uruchomienie Aplikacji
-
-1. **Sklonuj i przejdź do folderu:**
+### Metoda 1: Automatyczny skrypt
 ```bash
 cd aplikacja_python
+python run_local.py
 ```
 
-2. **Uruchom aplikację jedną komendą:**
+### Metoda 2: Ręczne uruchomienie
+
+**Backend Python FastAPI:**
 ```bash
-./start.sh
+cd aplikacja_python/backend
+pip install -r requirements.txt
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Skrypt automatycznie:
-- Sprawdza czy Docker jest uruchomiony
-- Tworzy plik `.env` z domyślną konfiguracją
-- Buduje wszystkie kontenery
-- Uruchamia usługi w kolejności (PostgreSQL → Backend → Frontend)
-- Sprawdza stan każdej usługi
-- Otwiera aplikację w przeglądarce
-
-### Dostęp do Aplikacji
-
-Po uruchomieniu aplikacja będzie dostępna pod:
-
-- **Frontend (React):** http://localhost:3000
-- **Backend API:** http://localhost:8000
-- **API Docs (Swagger):** http://localhost:8000/docs
-- **PostgreSQL:** localhost:5432
-
-### Zatrzymanie Aplikacji
-
+**Frontend React:**
 ```bash
-./stop.sh
+cd aplikacja_python/frontend  
+npm install
+npm run dev -- --port 3000
 ```
 
-Skrypt oferuje opcje:
-- Zatrzymanie kontenerów
-- Usunięcie woluminów (dane)
-- Usunięcie obrazów Docker
+## 🌐 Dostęp
 
-## 📊 Wykorzystanie
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **Dokumentacja API**: http://localhost:8000/docs
 
-### 1. Zarządzanie Kategoriami i Dochodami
-- Przejdź do zakładki "Admin/Budżet"
-- Dodaj kategorie wydatków z budżetami
-- Zarejestruj źródła dochodów
+## ⚙️ Kluczowe różnice vs Node.js
 
-### 2. Śledzenie Wydatków
-- Zakładka "Wydatki" - dodawaj codzienne wydatki
-- Używaj selektora miesiąca w nagłówku do filtrowania
-- Wyszukuj wydatki po opisie lub kwocie
+| Aspekt | Node.js/Express | Python FastAPI |
+|--------|----------------|----------------|  
+| **Język** | TypeScript | Python |
+| **Framework** | Express.js | FastAPI |
+| **ORM** | Drizzle | SQLAlchemy |
+| **Walidacja** | Zod | Pydantic |
+| **Struktura** | Monolityczne routy | Modularne routery |
+| **Typy** | TypeScript | Python type hints |
+| **Auto docs** | Brak | Swagger/OpenAPI |
 
-### 3. Portfolio Inwestycyjne
-- Zakładka "Inwestycje" → "Portfolio"
-- Dodaj swoje inwestycje (akcje, ETF)
-- Ceny aktualizują się automatycznie co 15 minut
+## 🔧 Moduły Backend
 
-### 4. Cele Oszczędnościowe
-- Zakładka "Cele Oszczędnościowe"
-- Ustaw cele z datami docelowymi
-- Dodawaj kwoty oszczędności
+### 1. **Database (database.py)**
+- PostgreSQL połączenie z Replit DATABASE_URL
+- Automatyczne tworzenie tabel
+- Session management dla SQLAlchemy
 
-### 5. Analiza Ryzyka
-- Zakładka "Inwestycje" → "Ryzyko"
-- Przegląd VaR, Expected Shortfall
-- Testy stresowe dla różnych scenariuszy
+### 2. **Models (models.py)** 
+- SQLAlchemy ORM z UUID primary keys
+- DECIMAL typy dla kwot finansowych
+- Relacje między tabelami
 
-### 6. Asystent AI
-- Zakładka "Inwestycje" → "AI Asystent"
-- Automatyczne analizy portfela i budżetu
-- Zadawaj pytania o finanse
+### 3. **Schemas (schemas.py)**
+- Pydantic modele dla request/response
+- Automatyczna walidacja danych
+- Type safety dla API
 
-## 🗃️ Baza Danych
+### 4. **Routers**
+- **Categories**: Kategorie z budżetami i kolorami
+- **Incomes**: Przychody (miesięczne, jednorazowe)
+- **Expenses**: Wydatki z filtrowaniem po dacie
+- **Investments**: Portfel z Yahoo Finance cenami
+- **Savings**: Cele oszczędnościowe z progressem
+- **AI**: Analiza portfela, budżetu, VaR calculations
+- **Prices**: Yahoo Finance search i aktualizacje
 
-Aplikacja automatycznie:
-- Tworzy bazę danych PostgreSQL jeśli nie istnieje
-- Inicjalizuje tabele przy pierwszym uruchomieniu
-- Dodaje przykładowe dane demonstracyjne
-- Zachowuje dane między restartami (Docker volumes)
+### 5. **Services**
+- **PriceService**: Automatyczne aktualizacje co 15 min
+- **AIService**: Analiza finansowa i rekomendacje
 
-### Struktura Danych
-- **categories** - kategorie wydatków
-- **incomes** - źródła dochodów
-- **expenses** - rejestr wydatków
-- **investments** - portfolio inwestycyjne
-- **savings_goals** - cele oszczędnościowe
+## 📊 Funkcjonalności
 
-## 🔧 Rozwój
+### Zarządzanie budżetem
+- ✅ Kategorie z limitami i kolorami
+- ✅ Przychody różnych typów
+- ✅ Wydatki z przypisaniem do kategorii  
+- ✅ Filtrowanie po miesiącach i latach
 
-### Struktura Projektu
-```
-aplikacja_python/
-├── backend/          # Python FastAPI backend
-│   ├── main.py       # Główny plik aplikacji
-│   ├── models.py     # Modele SQLAlchemy
-│   ├── schemas.py    # Schematy Pydantic
-│   ├── database.py   # Konfiguracja bazy danych
-│   ├── price_service.py  # Serwis cen Yahoo Finance
-│   ├── ai_service.py     # Serwis asystenta AI
-│   └── requirements.txt  # Zależności Python
-├── frontend/         # React TypeScript frontend
-│   ├── src/          # Kod źródłowy
-│   ├── package.json  # Zależności Node.js
-│   └── nginx.conf    # Konfiguracja Nginx
-├── docker-compose.yml    # Orkiestracja kontenerów
-├── init-db.sql          # Inicjalizacja bazy danych
-├── start.sh             # Skrypt uruchamiający
-└── stop.sh              # Skrypt zatrzymujący
-```
+### Portfel inwestycyjny
+- ✅ Akcje, ETF, obligacje
+- ✅ Automatyczne ceny z Yahoo Finance
+- ✅ Kalkulacja zysków/strat
+- ✅ Wykresy alokacji
 
-### Logowanie i Debugowanie
+### Analiza ryzyka  
+- ✅ Value at Risk (VaR) 95% i 99%
+- ✅ Expected Shortfall
+- ✅ Metryki ryzyka portfela
+- ✅ Stress testing scenariusze
 
-**Sprawdzenie logów wszystkich usług:**
-```bash
-docker-compose logs -f
-```
+### Asystent AI
+- ✅ Analiza portfela i rekomendacje
+- ✅ Analiza budżetu i optymalizacja  
+- ✅ Niestandardowe zapytania
+- ✅ Inteligentne insights
 
-**Logi konkretnej usługi:**
-```bash
-docker-compose logs -f backend
-docker-compose logs -f frontend
-docker-compose logs -f postgres
+## 🗄️ Baza danych
+
+Używa tej samej bazy PostgreSQL co wersja Node.js z automatycznym tworzeniem tabel:
+
+```sql
+categories     -- kategorie budżetowe
+incomes        -- źródła przychodów  
+expenses       -- wydatki osobiste
+investments    -- pozycje portfela
+savings_goals  -- cele oszczędnościowe
 ```
 
-**Status kontenerów:**
-```bash
-docker-compose ps
-```
+## 🌍 Integracje
 
-## 🔒 Konfiguracja
+- **Yahoo Finance**: Ceny akcji w czasie rzeczywistym
+- **PostgreSQL**: Trwałe przechowywanie w Replit
+- **APScheduler**: Automatyczne aktualizacje co 15 minut
 
-### Zmienne Środowiskowe (.env)
-```bash
-DATABASE_URL=postgresql://budget_user:budget_password@localhost:5432/budget_db
-PYTHONPATH=/app
-POSTGRES_DB=budget_db
-POSTGRES_USER=budget_user
-POSTGRES_PASSWORD=budget_password
-```
+## 📚 Dokumentacja API
 
-### Konfiguracja Portów
-Można zmienić porty w `docker-compose.yml`:
-- Frontend: port 3000
-- Backend: port 8000
-- PostgreSQL: port 5432
+Po uruchomieniu backendu dostępna pod: http://localhost:8000/docs
 
-## 📝 API Endpoints
+Automatyczna dokumentacja Swagger z możliwością testowania wszystkich endpointów.
 
-### Categories
-- `GET /api/categories` - Lista kategorii
-- `POST /api/categories` - Dodaj kategorię
-- `PUT /api/categories/{id}` - Aktualizuj kategorię
-- `DELETE /api/categories/{id}` - Usuń kategorię
+## ✅ Status implementacji
 
-### Investments  
-- `GET /api/investments` - Lista inwestycji
-- `POST /api/investments` - Dodaj inwestycję
-- `PUT /api/investments/{id}` - Aktualizuj inwestycję
+- ✅ **Backend FastAPI**: Kompletnie przepisany z modułową architekturą
+- ✅ **Wszystkie endpointy**: Categories, Incomes, Expenses, Investments, Savings, AI, Prices  
+- ✅ **Database integration**: SQLAlchemy z PostgreSQL
+- ✅ **Frontend configuration**: React skonfigurowany dla Python API
+- ✅ **Yahoo Finance**: Automatyczne aktualizacje cen
+- ✅ **AI Analysis**: Portfolio i budget analysis z VaR calculations
 
-### Price Service
-- `POST /api/prices/update` - Aktualizuj ceny
-- `GET /api/prices/search?q={symbol}` - Wyszukaj symbol
-- `GET /api/prices/stock/{symbol}` - Info o akcji
+## 🎯 Następne kroki
 
-### AI Assistant
-- `GET /api/ai/portfolio-analysis` - Analiza portfela
-- `GET /api/ai/budget-analysis` - Analiza budżetu
-- `POST /api/ai/custom-query` - Zapytanie AI
+1. **Uruchom backend**: `python -m uvicorn main:app --port 8000`
+2. **Uruchom frontend**: `npm run dev -- --port 3000`  
+3. **Otwórz aplikację**: http://localhost:3000
+4. **Sprawdź API docs**: http://localhost:8000/docs
 
-Pełna dokumentacja API: http://localhost:8000/docs
-
-## 🤝 Wsparcie
-
-Jeśli napotkasz problemy:
-
-1. **Sprawdź logi:** `docker-compose logs -f`
-2. **Restart usług:** `./stop.sh` następnie `./start.sh`
-3. **Sprawdź porty:** Upewnij się że porty 3000, 8000, 5432 są wolne
-4. **Wyczyść dane:** `./stop.sh` → usuń woluminy → `./start.sh`
-
----
-
-**Aplikacja Personal Budget Management** - Kompleksowe narzędzie do zarządzania finansami osobistymi z zaawansowaną analizą inwestycji i asystentem AI. 🚀
+Aplikacja Python jest gotowa do użycia z identyczną funkcjonalnością co wersja Node.js, ale z nowoczesną architekturą FastAPI.

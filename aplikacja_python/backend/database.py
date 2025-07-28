@@ -1,19 +1,23 @@
+"""
+Database configuration and utilities
+"""
 import os
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, MetaData
 from sqlalchemy.ext.declarative import declarative_base
-import asyncpg
-import asyncio
+from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+import logging
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Use the Replit database URL directly
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     # Fallback for development
     DATABASE_URL = "postgresql://username:password@localhost/database"
-    print("Warning: Using fallback DATABASE_URL. Set DATABASE_URL environment variable.")
+    logger.warning("Using fallback DATABASE_URL. Set DATABASE_URL environment variable.")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -21,6 +25,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 def get_db():
+    """Get database session"""
     db = SessionLocal()
     try:
         yield db
@@ -32,32 +37,30 @@ def create_database_if_not_exists():
     try:
         # Parse DATABASE_URL to get connection parameters
         import urllib.parse as urlparse
-        url = urlparse.urlparse(DATABASE_URL)
         
-        # Connect to postgres database to check if our database exists
-        postgres_url = f"postgresql://{url.username}:{url.password}@{url.hostname}:{url.port}/postgres"
+        parsed = urlparse.urlparse(DATABASE_URL)
+        db_name = parsed.path[1:]  # Remove leading slash
         
-        # Extract database name from path
-        db_name = url.path[1:]  # Remove leading slash
+        logger.info(f"Database connection configured for: {db_name}")
         
-        try:
-            # Try to connect to the target database
-            test_engine = create_engine(DATABASE_URL)
-            with test_engine.connect() as conn:
-                conn.execute(text("SELECT 1"))
-            print(f"Database '{db_name}' already exists")
-            test_engine.dispose()
-            
-        except Exception as e:
-            print(f"Database '{db_name}' doesn't exist or connection failed: {e}")
-            print("Database will be created automatically by PostgreSQL service")
+        # Test connection
+        with engine.connect() as conn:
+            logger.info("Database connection successful")
             
     except Exception as e:
-        print(f"Database check failed: {e}")
-        print("Proceeding with existing database connection")
+        logger.error(f"Database connection failed: {e}")
+        raise
 
 def init_db():
     """Initialize database tables"""
-    from models import Base
-    Base.metadata.create_all(bind=engine)
-    print("Database tables created successfully")
+    try:
+        # Import all models to ensure they are registered
+        from models import Category, Income, Expense, Investment, SavingsGoal
+        
+        # Create all tables
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables created successfully")
+        
+    except Exception as e:
+        logger.error(f"Failed to create database tables: {e}")
+        raise
