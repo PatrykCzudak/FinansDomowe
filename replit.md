@@ -148,3 +148,22 @@ The application follows a monorepo structure with shared TypeScript types betwee
   - **Optimization**: Markowitz portfolio optimization and AI-enhanced optimization with machine learning
 - **UI Improvements**: Added AlertTriangle icon, improved tab navigation, color-coded risk metrics
 - **Modular Architecture**: Separated risk analysis into dedicated component for scalability
+
+### 2025-01-28: Docker Setup & Project Structure Cleanup
+- **Clean Project Structure**: Reorganized into separate frontend/backend folders
+  - `/backend` - Python FastAPI with PostgreSQL, NumPy/Pandas for financial calculations
+  - `/frontend` - React + TypeScript with complete UI components
+  - Removed obsolete files and duplicate implementations
+- **Docker Configuration**: Complete Docker setup with multi-container orchestration
+  - `docker-compose.yml` with PostgreSQL, backend, and frontend services
+  - Automatic database initialization with `init-db.sql`
+  - Health checks and service dependencies properly configured
+  - Production-ready with Nginx proxy and security headers
+- **Deployment Scripts**: Added convenience scripts for easy deployment
+  - `start.sh` - One-command application startup with health monitoring
+  - `stop.sh` - Graceful application shutdown
+  - Environment configuration with `.env.example`
+- **Docker Build Fixes**: Resolved npm package-lock.json issues in frontend container
+  - Fixed Dockerfile to use `npm install` instead of `npm ci`
+  - Added `.dockerignore` files for optimized builds
+  - Updated package.json with all required dependencies

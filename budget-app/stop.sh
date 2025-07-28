@@ -5,13 +5,13 @@ echo "================================================="
 
 # Stop containers
 echo "📦 Stopping containers..."
-docker-compose down
+docker compose down
 
 echo ""
 echo "✅ Application stopped successfully!"
 echo ""
 echo "💡 To remove all data (CAUTION!):"
-echo "   docker-compose down -v"
+echo "   docker compose down -v"
 echo ""
 echo "🚀 To start again:"
 echo "   ./start.sh"

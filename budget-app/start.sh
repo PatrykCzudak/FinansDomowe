@@ -9,9 +9,9 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Check if docker-compose is available
-if ! command -v docker-compose &> /dev/null; then
-    echo "❌ docker-compose not found. Please install Docker Compose."
+# Check if docker compose is available (new syntax)
+if ! docker compose version &> /dev/null; then
+    echo "❌ docker compose not found. Please install Docker Compose."
     exit 1
 fi
 
@@ -26,13 +26,13 @@ fi
 
 # Pull latest images (if needed)
 echo "📦 Pulling Docker images..."
-docker-compose pull
+docker compose pull
 
 # Build and start the application
 echo "🏗️  Building and starting containers..."
 echo "This may take a few minutes on first run..."
 
-docker-compose up -d --build
+docker compose up -d --build
 
 # Wait for services to be ready
 echo "⏳ Waiting for services to start..."
@@ -42,7 +42,7 @@ sleep 10
 echo "🔍 Checking service health..."
 
 # Check database
-if docker-compose exec -T db pg_isready -U postgres -d budgetdb > /dev/null 2>&1; then
+if docker compose exec -T db pg_isready -U postgres -d budgetdb > /dev/null 2>&1; then
     echo "✅ Database is ready"
 else
     echo "⚠️  Database is still starting..."
@@ -71,9 +71,9 @@ echo "   Backend:   http://localhost:8000"
 echo "   API Docs:  http://localhost:8000/docs"
 echo ""
 echo "📋 Useful commands:"
-echo "   View logs:     docker-compose logs -f"
-echo "   Stop app:      docker-compose down"
-echo "   Restart:       docker-compose restart"
+echo "   View logs:     docker compose logs -f"
+echo "   Stop app:      docker compose down"
+echo "   Restart:       docker compose restart"
 echo ""
 echo "🔧 Database connection:"
 echo "   Host: localhost:5432"
