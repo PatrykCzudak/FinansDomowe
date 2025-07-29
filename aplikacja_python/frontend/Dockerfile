@@ -2,28 +2,28 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Kopiuj pliki package.json i package-lock.json
 COPY package*.json ./
 
-# Install dependencies
+# Instaluj zależności
 RUN npm ci
 
-# Copy source code
+# Kopiuj resztę kodu frontendu
 COPY . .
 
-# Set environment for production build
+# Zmienna środowiskowa (jeśli potrzebne, np. adres API, tutaj nie ustawiamy bo używamy relative path)
 ENV VITE_API_BASE=""
 
-# Build the application
+# Zbuduj aplikację (plik wyjściowy w /app/dist)
 RUN npm run build
 
-# Production stage with nginx
+# Etap produkcyjny - serwowanie statyczne przez nginx
 FROM nginx:alpine
 
-# Copy built files to nginx
+# Kopiuj z etapu budowania gotowe pliki statyczne do nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration
+# Kopiuj własną konfigurację nginx (jeśli potrzebna, np. dla SPA history mode)
 COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80

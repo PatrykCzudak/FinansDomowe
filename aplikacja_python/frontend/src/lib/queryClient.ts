@@ -1,55 +1,40 @@
-import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { QueryClient, QueryFunction } from '@tanstack/react-query';
 
-async function throwIfResNotOk(res: Response) {
+async function throwIfNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
     throw new Error(`${res.status}: ${text}`);
   }
 }
 
-export async function apiRequest(
-  method: string,
-  url: string,
-  data?: unknown | undefined,
-): Promise<Response> {
-  const apiBase = 'http://localhost:8000';
-  const fullUrl = url.startsWith('/api') ? `${apiBase}${url}` : url;
-  const res = await fetch(fullUrl, {
+// Pomocniczy klient API – opakowanie fetch z rzucaniem błędów
+export async function apiRequest(method: string, url: string, data?: unknown): Promise<Response> {
+  const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: data ? { 'Content-Type': 'application/json' } : {},
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+    credentials: 'include',  // jeśli korzystamy z uwierzytelniania przez ciasteczka
   });
-
-  await throwIfResNotOk(res);
+  await throwIfNotOk(res);
   return res;
 }
 
-type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn: <T>(options: {
-  on401: UnauthorizedBehavior;
-}) => QueryFunction<T> =
-  ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
-    const apiBase = 'http://localhost:8000';
-    const url = queryKey.join("/").replace(/^\/api/, `${apiBase}/api`);
-    const res = await fetch(url, {
-      credentials: "include",
-    });
+// Domyślna funkcja zapytania dla React Query (GET)
+const defaultQueryFn: QueryFunction = async ({ queryKey }) => {
+  const res = await fetch(queryKey.join('/') as string, { credentials: 'include' });
+  if (res.status === 401) {
+    // Obsługa braku autoryzacji - można rozszerzyć
+    return Promise.reject(new Error('Unauthorized'));
+  }
+  await throwIfNotOk(res);
+  return res.json();
+};
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
-    }
-
-    await throwIfResNotOk(res);
-    return await res.json();
-  };
-
+// Inicjalizacja QueryClient z domyślnymi opcjami
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
-      refetchInterval: false,
+      queryFn: defaultQueryFn,
       refetchOnWindowFocus: false,
       staleTime: Infinity,
       retry: false,

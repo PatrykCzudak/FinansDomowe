@@ -4,10 +4,10 @@ import Header from "@/components/layout/header";
 import Navigation from "@/components/layout/navigation";
 import FloatingExpenseButton from "@/components/floating-expense-button";
 import AdminPage from "./admin";
-import ExpensesPage from "./expenses";
-import SummaryPage from "./summary";
-import InvestmentsPage from "./investments";
-import SavingsPage from "./savings";
+import ExpensesPage from "./ExpensesPage";
+import SummaryPage from "./SummaryPage";
+import InvestmentsPage from "./InvestmentsPage";
+import SavingsPage from "./SavingsPage";
 
 export default function Home() {
   const [location] = useLocation();
