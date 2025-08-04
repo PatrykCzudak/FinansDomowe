@@ -1,6 +1,6 @@
 import { Wallet, Settings } from 'lucide-react';
-import { MonthSelector } from '../ui/MonthSelector';
-import { ThemeToggle } from '../ui/ThemeToggle';
+import { MonthSelector } from '../ui/month-selector';
+import { ThemeToggle } from '../ui/theme-toggle';
 import { useMonthContext } from '../../contexts/month-context';
 
 export default function Header() {

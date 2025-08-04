@@ -1,9 +1,9 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '../ui/Button';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '../ui/Form';
-import { Input } from '../ui/Input';
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '../ui/Select';
+import { Button } from '../ui/button';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '../ui/form';
+import { Input } from '../ui/input';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '../ui/select';
 import { useBudget } from '../../hooks/useBudget';
 import { insertInvestmentSchema } from '../../types';
 import type { Investment } from '../../types';

@@ -7,7 +7,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from 
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '../components/ui/select';
 import { Plus, Edit, Trash2, TrendingUp, DollarSign, Percent, ShoppingCart, Bot } from 'lucide-react';
 import InvestmentForm from '../components/forms/InvestmentForm';
-import AllocationChart from '../components/charts/AllocationChart';
+import AllocationChart from '../components/charts/allocation-chart';
 import AIAssistant from '../components/ai/AIAssistant';
 import type { Investment, InvestmentSale } from '../types';
 

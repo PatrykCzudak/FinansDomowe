@@ -2,11 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useMonthContext } from '../contexts/month-context';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
-import BudgetChart from '../components/charts/BudgetChart';
-import CategoryChart from '../components/charts/CategoryChart';
-import TrendsChart from '../components/charts/TrendsChart';
+import BudgetChart from '../components/charts/budget-chart';
+import CategoryChart from '../components/charts/category-chart';
+import TrendsChart from '../components/charts/trends-chart';
 import { CreditCard, Wallet, Calendar, PiggyBank } from 'lucide-react';
-import { filterIncomesByMonth, calculateMonthlyIncomeAmount } from '../utils/incomeFilter';
+import { filterIncomesByMonth, calculateMonthlyIncomeAmount } from '../utils/income-filter';
 import type { Category, Expense, Income, SavingsTransaction } from '../types';
 
 export default function SummaryPage() {

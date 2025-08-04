@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import type { Expense } from "@shared/schema";
+import type { Expense } from "../../types";
 
 interface TrendsChartProps {
   expenses: Expense[];
