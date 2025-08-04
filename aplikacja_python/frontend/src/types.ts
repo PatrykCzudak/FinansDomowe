@@ -69,21 +69,19 @@ export interface InvestmentSale {
 
 // Savings goals
 export const insertSavingsGoalSchema = z.object({
-  name: z.string().min(1),
+  title: z.string().min(1),
   targetAmount: z.string().min(1),
-  targetDate: z.string().optional().nullable(),
+  targetDate: z.string().min(1),
   category: z.string().min(1),
   color: z.string().min(1),
-  description: z.string().optional().nullable(),
 });
 export type InsertSavingsGoal = z.infer<typeof insertSavingsGoalSchema>;
 export interface SavingsGoal {
   id: string;
-  name: string;
-  description?: string | null;
+  title: string;
   targetAmount: string;
   currentAmount: string;
-  targetDate?: string | null;
+  targetDate: string;
   category: string;
   color: string;
   isCompleted?: boolean;

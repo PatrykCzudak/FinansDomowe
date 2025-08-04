@@ -3,27 +3,25 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { apiUrl } from '@/lib/api';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '../components/ui/form';
 import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '../components/ui/select';
-import { Plus, PiggyBank, TrendingUp, Calendar, Trash2, Target } from 'lucide-react';
+import { Plus, Trash2, Target } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { insertSavingsGoalSchema } from '../types';  // zod schema for validation
 import type { SavingsGoal } from '../types';
 
 type SavingsGoalFormData = {
-  name: string;
-  description?: string;
+  title: string;
   targetAmount: string;
   category: string;
   color: string;
-  targetDate?: string;
+  targetDate: string;
 };
 
 const defaultCategories = ['Wakacje', 'Samochód', 'Dom/Mieszkanie', 'Fundusz awaryjny', 'Edukacja', 'Emerytura', 'Sprzęt elektroniczny', 'Inne'];
@@ -45,10 +43,9 @@ export default function SavingsPage() {
     mutationFn: async (data: SavingsGoalFormData) => {
       // Przetworzenie danych formularza na format zgodny z API (konwersja liczby do stringa itp.)
       const payload = {
-        name: data.name,
-        description: data.description || undefined,
+        title: data.title,
         targetAmount: parseFloat(data.targetAmount).toString(),
-        targetDate: data.targetDate || undefined,
+        targetDate: data.targetDate,
         category: data.category,
         color: data.color,
       };
@@ -68,7 +65,7 @@ export default function SavingsPage() {
   // Mutacja dodawania oszczędności do wybranego celu
   const addSavingsMutation = useMutation({
     mutationFn: async ({ id, amount }: { id: string; amount: number }) => {
-      await fetch(apiUrl(`/api/savings-goals/${id}/add-savings`), {
+      await fetch(apiUrl(`/api/savings-goals/${id}/add`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount }),
@@ -97,8 +94,7 @@ export default function SavingsPage() {
   const form = useForm<SavingsGoalFormData>({
     resolver: zodResolver(insertSavingsGoalSchema),
     defaultValues: {
-      name: '',
-      description: '',
+      title: '',
       targetAmount: '',
       category: defaultCategories[0],
       color: defaultColors[0],
@@ -165,7 +161,7 @@ export default function SavingsPage() {
               <Card key={goal.id}>
                 <CardHeader className="flex items-center justify-between pb-3">
                   <CardTitle className="flex items-center">
-                    <Target className="mr-2 h-5 w-5 text-green-600" /> {goal.name}
+                    <Target className="mr-2 h-5 w-5 text-green-600" /> {goal.title}
                   </CardTitle>
                   <div className="flex space-x-2">
                     <Button size="sm" onClick={() => { setSelectedGoal(goal); setShowAddSavingsDialog(true); }}>
@@ -177,14 +173,13 @@ export default function SavingsPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription>{goal.description}</CardDescription>
                   <div className="mt-2 mb-4">
                     <Progress value={progress} className="w-full h-3" style={{ background: `${goal.color}20` }} />
                     <p className="text-sm text-gray-600 mt-1">{progress.toFixed(1)}% ({goal.currentAmount} / {goal.targetAmount} zł)</p>
                   </div>
                   {goal.targetDate && (
                     <p className="text-xs text-gray-500 mb-2">
-                      Cel do: {format(new Date(goal.targetDate), 'LLLL yyyy', { locale: pl })} 
+                      Cel do: {format(new Date(goal.targetDate), 'LLLL yyyy', { locale: pl })}
                       {monthlySave !== null && monthlySave >= 0 && (
                         <> – aby zdążyć, odkładaj ~<span className="font-medium">{monthlySave} zł</span> / miesiąc</>
                       )}
@@ -206,25 +201,14 @@ export default function SavingsPage() {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {/* Pola formularza: nazwa, opis, kwota, kategoria, kolor, data */}
+              {/* Pola formularza: nazwa, kwota, kategoria, kolor, data */}
               <FormField
                 control={form.control}
-                name="name"
+                name="title"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nazwa celu</FormLabel>
                     <FormControl><Input placeholder="Np. Wakacje w Grecji" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Opis (opcjonalnie)</FormLabel>
-                    <FormControl><Textarea placeholder="Krótki opis celu" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -279,7 +263,7 @@ export default function SavingsPage() {
                 name="targetDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Data realizacji (opcjonalnie)</FormLabel>
+                    <FormLabel>Data realizacji</FormLabel>
                     <FormControl><Input type="date" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
@@ -302,13 +286,13 @@ export default function SavingsPage() {
           </DialogHeader>
           {selectedGoal && (
             <div className="space-y-4">
-              <p>Cel: <span className="font-medium">{selectedGoal.name}</span></p>
-              <Input 
-                type="number" 
-                step="0.01" 
-                placeholder="Kwota" 
-                value={addAmount} 
-                onChange={e => setAddAmount(e.target.value)} 
+              <p>Cel: <span className="font-medium">{selectedGoal.title}</span></p>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="Kwota"
+                value={addAmount}
+                onChange={e => setAddAmount(e.target.value)}
               />
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={() => setShowAddSavingsDialog(false)}>Anuluj</Button>
