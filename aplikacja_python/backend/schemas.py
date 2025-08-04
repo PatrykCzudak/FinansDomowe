@@ -7,16 +7,31 @@ from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
 
+def to_camel(string: str) -> str:
+    """Convert snake_case strings to camelCase."""
+    parts = string.split("_")
+    return parts[0] + "".join(word.capitalize() for word in parts[1:])
+
+
+class CamelModel(BaseModel):
+    """Base model that outputs camelCase keys."""
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+        alias_generator = to_camel
+
+
 # Category schemas
-class CategoryBase(BaseModel):
+class CategoryBase(CamelModel):
     name: str
     color: str
     budget: Decimal
 
-class CategoryCreate(BaseModel):
+class CategoryCreate(CategoryBase):
     pass
 
-class CategoryUpdate(BaseModel):
+class CategoryUpdate(CamelModel):
     name: Optional[str] = None
     color: Optional[str] = None
     budget: Optional[Decimal] = None
@@ -25,11 +40,8 @@ class Category(CategoryBase):
     id: UUID
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 # Income schemas
-class IncomeBase(BaseModel):
+class IncomeBase(CamelModel):
     name: str
     amount: Decimal
     frequency: str
@@ -38,7 +50,7 @@ class IncomeBase(BaseModel):
 class IncomeCreate(IncomeBase):
     pass
 
-class IncomeUpdate(BaseModel):
+class IncomeUpdate(CamelModel):
     name: Optional[str] = None
     amount: Optional[Decimal] = None
     frequency: Optional[str] = None
@@ -48,11 +60,8 @@ class Income(IncomeBase):
     id: UUID
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 # Expense schemas
-class ExpenseBase(BaseModel):
+class ExpenseBase(CamelModel):
     description: str
     amount: Decimal
     category_id: UUID
@@ -61,7 +70,7 @@ class ExpenseBase(BaseModel):
 class ExpenseCreate(ExpenseBase):
     pass
 
-class ExpenseUpdate(BaseModel):
+class ExpenseUpdate(CamelModel):
     description: Optional[str] = None
     amount: Optional[Decimal] = None
     category_id: Optional[UUID] = None
@@ -71,11 +80,8 @@ class Expense(ExpenseBase):
     id: UUID
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 # Investment schemas
-class InvestmentBase(BaseModel):
+class InvestmentBase(CamelModel):
     symbol: str
     name: str
     type: str
@@ -86,7 +92,7 @@ class InvestmentBase(BaseModel):
 class InvestmentCreate(InvestmentBase):
     pass
 
-class InvestmentUpdate(BaseModel):
+class InvestmentUpdate(CamelModel):
     symbol: Optional[str] = None
     name: Optional[str] = None
     type: Optional[str] = None
@@ -100,11 +106,8 @@ class Investment(InvestmentBase):
     current_price: Optional[Decimal]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 # Savings Goal schemas
-class SavingsGoalBase(BaseModel):
+class SavingsGoalBase(CamelModel):
     title: str
     target_amount: Decimal
     target_date: str
@@ -114,7 +117,7 @@ class SavingsGoalBase(BaseModel):
 class SavingsGoalCreate(SavingsGoalBase):
     pass
 
-class SavingsGoalUpdate(BaseModel):
+class SavingsGoalUpdate(CamelModel):
     title: Optional[str] = None
     target_amount: Optional[Decimal] = None
     current_amount: Optional[Decimal] = None
@@ -129,14 +132,11 @@ class SavingsGoal(SavingsGoalBase):
     is_completed: bool
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
-class AddSavingsRequest(BaseModel):
+class AddSavingsRequest(CamelModel):
     amount: Decimal = Field(..., gt=0, description="Amount to add to savings goal")
 
 # AI and analysis schemas
-class RiskAnalysisResponse(BaseModel):
+class RiskAnalysisResponse(CamelModel):
     var_95: float
     var_99: float
     expected_shortfall_95: float
@@ -144,10 +144,10 @@ class RiskAnalysisResponse(BaseModel):
     returns_data: list[float]
     recommendations: list[str]
 
-class AIAnalysisResponse(BaseModel):
+class AIAnalysisResponse(CamelModel):
     analysis: str
     recommendations: list[str]
     key_metrics: dict
 
-class CustomQueryRequest(BaseModel):
+class CustomQueryRequest(CamelModel):
     query: str
