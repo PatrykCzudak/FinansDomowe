@@ -7,7 +7,7 @@ import { MonthProvider } from './contexts/month-context';
 import { ThemeProvider } from './contexts/theme-context';  // opcjonalnie
 
 import App from './App';
-//import './styles/index.css';  // import Tailwind CSS
+import './index.css';  // import Tailwind CSS
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
