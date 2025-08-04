@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { apiUrl } from '@/lib/api';
 import { useBudget } from '../hooks/useBudget';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -31,7 +32,7 @@ export default function InvestmentsPage() {
   // Mutacja sprzedaży inwestycji
   const sellInvestmentMutation = useMutation({
     mutationFn: async ({ id, quantitySold, salePrice }: { id: string; quantitySold: number; salePrice: number }) => {
-      await fetch(`/api/investments/${id}/sell`, {
+      await fetch(apiUrl(`/api/investments/${id}/sell`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quantitySold, salePrice }),
