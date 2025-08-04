@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { InsertCategory, InsertIncome, InsertExpense, InsertInvestment } from "../types";
+import type { InsertCategory, InsertIncome, InsertExpense, InsertInvestment } from "@shared/schema";
 
 export function useBudget() {
   const queryClient = useQueryClient();

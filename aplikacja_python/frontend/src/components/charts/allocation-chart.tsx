@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import type { Investment } from "../../types";
+import type { Investment } from "@shared/schema";
 
 interface AllocationChartProps {
   investments: Investment[];

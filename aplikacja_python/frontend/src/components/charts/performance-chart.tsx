@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import type { Investment } from "../../types";
+import type { Investment } from "@shared/schema";
 
 interface PerformanceChartProps {
   investments: Investment[];

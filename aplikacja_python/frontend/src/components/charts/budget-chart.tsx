@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import type { Category, Expense } from "../../types";
+import type { Category, Expense } from "@shared/schema";
 
 interface BudgetChartProps {
   categories: Category[];

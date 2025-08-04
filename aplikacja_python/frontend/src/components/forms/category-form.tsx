@@ -1,16 +1,16 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '../ui/button';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '../ui/form';
-import { Input } from '../ui/input';
-import { useBudget } from '../../hooks/useBudget';
-import { insertCategorySchema } from '../../types';
-import { z } from 'zod';
-import type { Category } from '../../types';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useBudget } from "@/hooks/use-budget";
+import { insertCategorySchema, type Category } from "@shared/schema";
+import { z } from "zod";
 
 const formSchema = insertCategorySchema.extend({
-  budget: z.string().min(1, 'Limit budżetu jest wymagany'),
+  budget: z.string().min(1, "Budget jest wymagany"),
 });
+
 type FormData = z.infer<typeof formSchema>;
 
 interface CategoryFormProps {
@@ -21,25 +21,26 @@ interface CategoryFormProps {
 
 export default function CategoryForm({ category, onSuccess, onCancel }: CategoryFormProps) {
   const { createCategory, updateCategory } = useBudget();
+  
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: category?.name || '',
-      color: category?.color || '#3B82F6',
-      budget: category?.budget?.toString() || '',
+      name: category?.name || "",
+      color: category?.color || "#3B82F6",
+      budget: category?.budget || "",
     },
   });
 
   const onSubmit = async (data: FormData) => {
     try {
       if (category) {
-        await updateCategory.mutateAsync({ id: category.id, data: { ...data, budget: data.budget } });
+        await updateCategory.mutateAsync({ id: category.id, data });
       } else {
-        await createCategory.mutateAsync({ ...data, budget: data.budget });
+        await createCategory.mutateAsync(data);
       }
       onSuccess();
     } catch (error) {
-      console.error('Failed to save category:', error);
+      console.error("Failed to save category:", error);
     }
   };
 
@@ -52,11 +53,14 @@ export default function CategoryForm({ category, onSuccess, onCancel }: Category
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nazwa kategorii</FormLabel>
-              <FormControl><Input placeholder="np. Żywność" {...field} /></FormControl>
+              <FormControl>
+                <Input placeholder="np. Żywność" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="color"
@@ -65,29 +69,38 @@ export default function CategoryForm({ category, onSuccess, onCancel }: Category
               <FormLabel>Kolor</FormLabel>
               <FormControl>
                 <div className="flex items-center space-x-2">
-                  <Input type="color" className="w-16 h-10 p-0" {...field} />
-                  <Input {...field} placeholder="#XXXXXX" />
+                  <Input type="color" {...field} className="w-16 h-10" />
+                  <Input {...field} placeholder="#3B82F6" />
                 </div>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="budget"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Miesięczny limit (zł)</FormLabel>
-              <FormControl><Input type="number" step="0.01" placeholder="0.00" {...field} /></FormControl>
+              <FormControl>
+                <Input type="number" step="0.01" placeholder="0.00" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <div className="flex justify-end space-x-2 pt-2">
-          <Button type="button" variant="outline" onClick={onCancel}>Anuluj</Button>
-          <Button type="submit" disabled={createCategory.isLoading || updateCategory.isLoading}>
-            {category ? 'Zapisz zmiany' : 'Dodaj kategorię'}
+
+        <div className="flex justify-end space-x-2">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Anuluj
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={createCategory.isPending || updateCategory.isPending}
+          >
+            {category ? "Zapisz zmiany" : "Dodaj kategorię"}
           </Button>
         </div>
       </form>

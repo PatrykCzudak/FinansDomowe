@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import type { Category, Expense } from "../../types";
+import type { Category, Expense } from "@shared/schema";
 
 interface CategoryChartProps {
   categories: Category[];

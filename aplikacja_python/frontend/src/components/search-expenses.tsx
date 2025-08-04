@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
-import type { Expense, Category } from "../types";
+import type { Expense, Category } from "@shared/schema";
 
 export default function SearchExpenses() {
   const [searchTerm, setSearchTerm] = useState("");
