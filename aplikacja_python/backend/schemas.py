@@ -12,7 +12,7 @@ class CategoryBase(BaseModel):
     color: str
     budget: Decimal
 
-class CategoryCreate(CategoryBase):
+class CategoryCreate(BaseModel):
     pass
 
 class CategoryUpdate(BaseModel):
