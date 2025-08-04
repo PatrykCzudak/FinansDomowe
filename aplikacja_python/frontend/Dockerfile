@@ -24,7 +24,8 @@ FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Kopiuj własną konfigurację nginx (jeśli potrzebna, np. dla SPA history mode)
-COPY nginx.conf /etc/nginx/nginx.conf
+# Używamy katalogu conf.d, aby zachować domyślny nginx.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
