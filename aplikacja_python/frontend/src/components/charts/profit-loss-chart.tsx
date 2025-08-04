@@ -1,5 +1,5 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { InvestmentSale } from '@shared/schema';
+import type { InvestmentSale } from '../../types';
 
 interface ProfitLossChartProps {
   investmentSales: InvestmentSale[];

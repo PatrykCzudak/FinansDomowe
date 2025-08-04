@@ -1,4 +1,4 @@
-import type { Income } from "@shared/schema";
+import type { Income } from "../types";
 
 export function filterIncomesByMonth(incomes: Income[], targetMonth: string): Income[] {
   return incomes.filter(income => {

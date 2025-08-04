@@ -18,7 +18,7 @@ import {
   type RiskMetrics,
   type TimeSeriesData
 } from "@/utils/risk-calculations";
-import type { Investment } from "@shared/schema";
+import type { Investment } from "../../types";
 
 
 

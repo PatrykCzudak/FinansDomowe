@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '../ui/Dialog';
-import { Button } from '../ui/Button';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Button } from './ui/button';
 import ExpenseForm from './forms/ExpenseForm';
 import type { Category } from '../../types';  // zakładamy istnienie typu Category
 
