@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from '@tanstack/react-query';
+import { apiUrl } from './api';
 
 async function throwIfNotOk(res: Response) {
   if (!res.ok) {
@@ -9,7 +10,7 @@ async function throwIfNotOk(res: Response) {
 
 // Pomocniczy klient API – opakowanie fetch z rzucaniem błędów
 export async function apiRequest(method: string, url: string, data?: unknown): Promise<Response> {
-  const res = await fetch(url, {
+  const res = await fetch(apiUrl(url), {
     method,
     headers: data ? { 'Content-Type': 'application/json' } : {},
     body: data ? JSON.stringify(data) : undefined,
@@ -21,7 +22,7 @@ export async function apiRequest(method: string, url: string, data?: unknown): P
 
 // Domyślna funkcja zapytania dla React Query (GET)
 const defaultQueryFn: QueryFunction = async ({ queryKey }) => {
-  const res = await fetch(queryKey.join('/') as string, { credentials: 'include' });
+  const res = await fetch(apiUrl(queryKey.join('/') as string), { credentials: 'include' });
   if (res.status === 401) {
     // Obsługa braku autoryzacji - można rozszerzyć
     return Promise.reject(new Error('Unauthorized'));

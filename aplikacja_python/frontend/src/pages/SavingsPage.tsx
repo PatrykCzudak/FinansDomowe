@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { apiUrl } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
 import { Button } from '../components/ui/button';
@@ -51,7 +52,7 @@ export default function SavingsPage() {
         category: data.category,
         color: data.color,
       };
-      await fetch('/api/savings-goals', {
+      await fetch(apiUrl('/api/savings-goals'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -67,7 +68,7 @@ export default function SavingsPage() {
   // Mutacja dodawania oszczędności do wybranego celu
   const addSavingsMutation = useMutation({
     mutationFn: async ({ id, amount }: { id: string; amount: number }) => {
-      await fetch(`/api/savings-goals/${id}/add-savings`, {
+      await fetch(apiUrl(`/api/savings-goals/${id}/add-savings`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount }),
@@ -85,7 +86,7 @@ export default function SavingsPage() {
   // Mutacja usuwania celu
   const deleteGoalMutation = useMutation({
     mutationFn: async (id: string) => {
-      await fetch(`/api/savings-goals/${id}`, { method: 'DELETE' });
+      await fetch(apiUrl(`/api/savings-goals/${id}`), { method: 'DELETE' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['/api/savings-goals']);

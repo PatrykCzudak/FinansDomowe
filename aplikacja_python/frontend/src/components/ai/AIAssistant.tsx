@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { apiUrl } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -43,7 +44,7 @@ export default function AIAssistant() {
   // Mutacja zapytania własnego (POST na /api/ai/query)
   const customQueryMutation = useMutation({
     mutationFn: async (query: AIQuery) => {
-      const res = await fetch('/api/ai/query', {
+      const res = await fetch(apiUrl('/api/ai/query'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(query),

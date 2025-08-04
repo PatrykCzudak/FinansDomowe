@@ -11,8 +11,8 @@ RUN npm ci
 # Kopiuj resztę kodu frontendu
 COPY . .
 
-# Zmienna środowiskowa (jeśli potrzebne, np. adres API, tutaj nie ustawiamy bo używamy relative path)
-ENV VITE_API_BASE=""
+# W produkcyjnym kontenerze frontend łączy się z usługą backend
+ENV VITE_API_BASE="http://backend:8000"
 
 # Zbuduj aplikację (plik wyjściowy w /app/dist)
 RUN npm run build
