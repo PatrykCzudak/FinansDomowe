@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from decimal import Decimal
 from datetime import datetime
+from uuid import UUID
 
 # Category schemas
 class CategoryBase(BaseModel):
@@ -21,9 +22,9 @@ class CategoryUpdate(BaseModel):
     budget: Optional[Decimal] = None
 
 class Category(CategoryBase):
-    id: str
+    id: UUID
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -44,9 +45,9 @@ class IncomeUpdate(BaseModel):
     date: Optional[str] = None
 
 class Income(IncomeBase):
-    id: str
+    id: UUID
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -54,7 +55,7 @@ class Income(IncomeBase):
 class ExpenseBase(BaseModel):
     description: str
     amount: Decimal
-    category_id: str
+    category_id: UUID
     date: str
 
 class ExpenseCreate(ExpenseBase):
@@ -63,13 +64,13 @@ class ExpenseCreate(ExpenseBase):
 class ExpenseUpdate(BaseModel):
     description: Optional[str] = None
     amount: Optional[Decimal] = None
-    category_id: Optional[str] = None
+    category_id: Optional[UUID] = None
     date: Optional[str] = None
 
 class Expense(ExpenseBase):
-    id: str
+    id: UUID
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -95,10 +96,10 @@ class InvestmentUpdate(BaseModel):
     purchase_date: Optional[str] = None
 
 class Investment(InvestmentBase):
-    id: str
+    id: UUID
     current_price: Optional[Decimal]
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -123,11 +124,11 @@ class SavingsGoalUpdate(BaseModel):
     is_completed: Optional[bool] = None
 
 class SavingsGoal(SavingsGoalBase):
-    id: str
+    id: UUID
     current_amount: Decimal
     is_completed: bool
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
